@@ -33,7 +33,11 @@ export function WizytaKarta({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span className="truncate text-[16px] font-bold">{w.klientka?.imie ?? "—"}</span>
-            {w.status !== "potwierdzona" && <Status s={w.status} />}
+            {w.odwolala_klientka ? (
+              <span className="rounded-full bg-roz-jasny px-2.5 py-1 text-[12px] font-bold text-[#8a2f3a]">Odwołała sama</span>
+            ) : (
+              w.status !== "potwierdzona" && <Status s={w.status} />
+            )}
           </div>
           <div className="mt-0.5 truncate text-[14px] text-szary">{w.usluga_nazwa || "Wizyta"}</div>
           <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-szary">

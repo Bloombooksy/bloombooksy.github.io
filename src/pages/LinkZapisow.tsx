@@ -6,20 +6,22 @@ import { komunikat, supabase } from "../lib/supabase";
 import { Blad, Przelacznik } from "../components/ui";
 import { Wstecz } from "../components/Wstecz";
 import type { SalonRow } from "../lib/database.types";
-
-export function linkZapisow(token: string) {
-  const baza = window.location.href.split("#")[0];
-  return `${baza}#/zapisy/${token}`;
-}
+import { linkZapisow } from "../lib/wiadomosci";
 
 export default function LinkZapisow() {
   const { data: s } = useSalon();
   const zmien = useZmienSalon();
   const qc = useQueryClient();
   const [nazwa, setNazwa] = useState("");
+  const [adres, setAdres] = useState("");
+  const [tel, setTel] = useState("");
   const [skopiowano, setSkopiowano] = useState(false);
   const [blad, setBlad] = useState("");
-  useEffect(() => setNazwa(s?.nazwa ?? ""), [s?.nazwa]);
+  useEffect(() => {
+    setNazwa(s?.nazwa ?? "");
+    setAdres(s?.adres ?? "");
+    setTel(s?.telefon ?? "");
+  }, [s?.nazwa, s?.adres, s?.telefon]);
   if (!s) return null;
   const link = linkZapisow(s.zapisy_token);
   const tekst = `Hej! Tu możesz sama zapisać się do mnie na paznokcie 💅 ${link}`;
@@ -46,7 +48,8 @@ export default function LinkZapisow() {
       <h1 className="naglowek">Zapisy przez link</h1>
       <p className="text-[15px] text-szary">
         Wyślij ten link znajomym – zobaczą tylko wolne godziny (bez nazwisk innych klientek) i same wybiorą termin. Zapis pojawi się u Ciebie jako
-        „do potwierdzenia”.
+        „do potwierdzenia”, a klientka dostanie swoją stronę wizyty z przyciskiem „Dodaj do kalendarza”. Konkretnej klientce najprościej wysłać link z
+        jej karty w zakładce Klientki – będzie miała już wpisane imię i numer.
       </p>
 
       <div className="karta space-y-4 p-4">
@@ -82,6 +85,18 @@ export default function LinkZapisow() {
             Nazwa widoczna dla klientek
           </label>
           <input id="nz" className="pole" value={nazwa} onChange={(e) => setNazwa(e.target.value)} onBlur={() => nazwa.trim() && nazwa !== s.nazwa && ustaw({ nazwa: nazwa.trim() })} />
+        </div>
+        <div>
+          <label className="etykieta" htmlFor="ad">
+            Adres salonu (w kalendarzu klientki i na mapie)
+          </label>
+          <input id="ad" className="pole" value={adres} onChange={(e) => setAdres(e.target.value)} onBlur={() => adres !== s.adres && ustaw({ adres: adres.trim() })} />
+        </div>
+        <div>
+          <label className="etykieta" htmlFor="tl">
+            Telefon do salonu (widzi go klientka)
+          </label>
+          <input id="tl" type="tel" className="pole" value={tel} onChange={(e) => setTel(e.target.value)} onBlur={() => tel !== s.telefon && ustaw({ telefon: tel.trim() })} />
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Wybor etykieta="Najwcześniej" wartosc={s.zapisy_wyprzedzenie_h} onZmien={(v) => ustaw({ zapisy_wyprzedzenie_h: v })} opcje={[[2, "2 h przed"], [12, "12 h przed"], [24, "dzień przed"], [48, "2 dni przed"]]} />

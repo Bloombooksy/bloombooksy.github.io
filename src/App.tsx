@@ -16,6 +16,7 @@ const Link = lazy(() => import("./pages/LinkZapisow"));
 const Sms = lazy(() => import("./pages/Sms"));
 const Podsumowanie = lazy(() => import("./pages/Podsumowanie"));
 const Zapisy = lazy(() => import("./pages/Zapisy"));
+const MojaWizyta = lazy(() => import("./pages/MojaWizyta"));
 
 function useSesja() {
   const [sesja, setSesja] = useState<Session | null | undefined>(undefined);
@@ -60,6 +61,14 @@ export function App() {
           element={
             <Suspense fallback={<Ladowanie />}>
               <Zapisy />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/wizyta/:kod"
+          element={
+            <Suspense fallback={<Ladowanie />}>
+              <MojaWizyta />
             </Suspense>
           }
         />

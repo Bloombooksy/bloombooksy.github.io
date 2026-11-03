@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
 import { Trash2, UserPlus } from "lucide-react";
 import { Blad, Modal } from "./ui";
-import { useKlientki, useSalonId, useUslugi, useZapis, type WizytaZKlientka } from "../lib/dane";
+import { useKlientki, useSalon, useSalonId, useUslugi, useZapis, type WizytaZKlientka } from "../lib/dane";
+import { linkWizyty, smsHref, trescWizyty } from "../lib/wiadomosci";
+import { WyslijSms } from "./WyslijSms";
 import { dzienKey, godzina, opisCzasu, wStrefie } from "../lib/czas";
 import { komunikat } from "../lib/supabase";
 import { parsujKwote } from "../lib/pieniadze";
@@ -42,6 +44,8 @@ export function WizytaForm({
   const [notatka, setNotatka] = useState(wizyta?.notatka ?? "");
   const [blad, setBlad] = useState("");
   const [zapisuje, setZapisuje] = useState(false);
+  const [dodana, setDodana] = useState<{ kod: string; start: string; usluga: string; imie: string; telefon: string } | null>(null);
+  const { data: salon } = useSalon();
 
   const aktywne = uslugi.filter((u) => u.aktywna || u.id === uslugaId);
   const pasujace = useMemo(() => {
@@ -88,9 +92,16 @@ export function WizytaForm({
         cena: kwotaCeny,
         notatka: notatka.trim(),
       };
-      if (wizyta) await wizytyApi.zmien.mutateAsync({ id: wizyta.id, ...wiersz });
-      else await wizytyApi.dodaj.mutateAsync({ ...wiersz, salon_id: salonId, status: "potwierdzona", zrodlo: "panel" });
-      onClose();
+      const tel = nowa ? telefon.trim() : (klientki.find((k) => k.id === kId)?.telefon ?? "");
+      if (wizyta) {
+        await wizytyApi.zmien.mutateAsync({ id: wizyta.id, ...wiersz });
+        onClose();
+      } else {
+        const w = await wizytyApi.dodaj.mutateAsync({ ...wiersz, salon_id: salonId, status: "potwierdzona", zrodlo: "panel" });
+        // od razu proponujemy SMS z linkiem do wizyty – klientka doda ją sobie do kalendarza
+        if (tel) setDodana({ kod: w.kod, start: w.start, usluga: w.usluga_nazwa, imie: szukaj.trim(), telefon: tel });
+        else onClose();
+      }
     } catch (err) {
       setBlad(komunikat(err));
     } finally {
@@ -117,6 +128,31 @@ export function WizytaForm({
       setBlad(komunikat(err));
     }
   }
+
+  if (dodana) {
+    const tresc = trescWizyty({ ...dodana, salon: salon?.nazwa ?? "", link: linkWizyty(dodana.kod) });
+    return (
+      <Modal tytul="Wizyta dodana ✓" onClose={onClose}>
+        <div className="space-y-4">
+          <p className="text-[15px]">
+            Wyślij <b>{dodana.imie}</b> SMS z terminem – w linku doda wizytę do swojego kalendarza jednym tapnięciem.
+          </p>
+          <p className="rounded-2xl rounded-bl-md bg-[#e9e3dc] p-3.5 text-[14px]">{tresc}</p>
+          <div className="grid grid-cols-2 gap-2">
+            <button className="btn-jasny" onClick={onClose}>
+              Nie teraz
+            </button>
+            <a className="btn-glowny" href={smsHref(dodana.telefon, tresc)} onClick={() => setTimeout(onClose, 300)}>
+              Wyślij SMS
+            </a>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
+
+  const telKlientki = wizyta?.klientka?.telefon ?? "";
+  const aktualna = wizyta && (wizyta.status === "potwierdzona" || wizyta.status === "oczekuje");
 
   return (
     <Modal
@@ -249,6 +285,15 @@ export function WizytaForm({
           <textarea id="nt" rows={2} className="pole resize-none" placeholder="np. kolor, zdobienia, uwagi" value={notatka} onChange={(e) => setNotatka(e.target.value)} />
         </div>
 
+        {wizyta && aktualna && telKlientki && (
+          <WyslijSms className="w-full"
+            telefon={telKlientki}
+            tresc={trescWizyty({ imie: wizyta.klientka?.imie ?? "", start: wizyta.start, usluga: wizyta.usluga_nazwa, salon: salon?.nazwa ?? "", link: linkWizyty(wizyta.kod) })}
+          >
+            Wyślij klientce SMS z wizytą
+          </WyslijSms>
+        )}
+        {wizyta?.odwolala_klientka && <p className="rounded-xl bg-roz-jasny px-3.5 py-2.5 text-[14px] font-semibold text-[#8a2f3a]">Klientka sama odwołała tę wizytę.</p>}
         {wizyta && wizyta.status !== "zrealizowana" && (
           <div className="flex flex-wrap gap-2">
             {wizyta.status === "oczekuje" && (

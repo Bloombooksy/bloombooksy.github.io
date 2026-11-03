@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { CalendarCheck2, Clock, Link2Off } from "lucide-react";
+import { Clock, Link2Off } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { DNI_KROTKO, dodajDni, dzienKey, dzienTygodnia, godzina, opisCzasu, opisDnia } from "../lib/czas";
 import { zl } from "../lib/pieniadze";
@@ -14,11 +14,13 @@ type Info = {
   dni_pracy: number[];
   uslugi: { id: string; nazwa: string; czas_min: number; cena: number }[];
 };
-type Wynik = { id: string; salon: string; usluga: string; start: string };
+type Wynik = { id: string; kod: string; salon: string; usluga: string; start: string };
 
 /** Publiczna strona zapisów dla znajomych (tajny link) – bez logowania, widać tylko wolne godziny. */
 export default function Zapisy() {
   const { token = "" } = useParams();
+  const [params] = useSearchParams();
+  const nav = useNavigate();
   const info = useQuery({
     queryKey: ["zapisy-info", token],
     queryFn: async () => {
@@ -30,12 +32,12 @@ export default function Zapisy() {
   const [uslugaId, setUslugaId] = useState("");
   const [dzien, setDzien] = useState("");
   const [start, setStart] = useState("");
-  const [imie, setImie] = useState("");
-  const [telefon, setTelefon] = useState("");
+  // link wysłany przez Madzię może mieć już imię i numer klientki
+  const [imie, setImie] = useState(params.get("imie") ?? "");
+  const [telefon, setTelefon] = useState(params.get("tel") ?? "");
   const [notatka, setNotatka] = useState("");
   const [blad, setBlad] = useState("");
   const [wysylam, setWysylam] = useState(false);
-  const [wynik, setWynik] = useState<Wynik | null>(null);
   const dalej = useRef<HTMLDivElement>(null);
 
   const dzis = dzienKey();
@@ -80,7 +82,7 @@ export default function Zapisy() {
       void wolne.refetch();
       return;
     }
-    setWynik(data as Wynik);
+    nav(`/wizyta/${(data as Wynik).kod}?nowa`);
   }
 
   if (info.isLoading) return <Ladowanie />;
@@ -90,24 +92,6 @@ export default function Zapisy() {
         <Link2Off className="mx-auto size-10 text-szary" />
         <h1 className="naglowek mt-3 text-center">Link jest nieaktywny</h1>
         <p className="mt-2 text-center text-szary">Zapisy są wyłączone albo link się zmienił. Napisz bezpośrednio, żeby umówić wizytę.</p>
-      </Ekran>
-    );
-
-  if (wynik)
-    return (
-      <Ekran>
-        <div className="mx-auto grid size-16 place-items-center rounded-full bg-ziel-jasny text-ziel">
-          <CalendarCheck2 className="size-8" />
-        </div>
-        <h1 className="naglowek mt-4 text-center">Dziękuję, {imie.trim().split(" ")[0]}!</h1>
-        <p className="mt-2 text-center text-[16px]">
-          <b>{wynik.usluga}</b>
-          <br />
-          {opisDnia(dzienKey(wynik.start))}, godz. {godzina(wynik.start)}
-        </p>
-        <p className="mt-4 rounded-2xl bg-bursztyn-jasny p-4 text-center text-[15px] text-bursztyn">
-          Termin czeka na potwierdzenie – dam znać. Dzień przed wizytą dostaniesz SMS z przypomnieniem.
-        </p>
       </Ekran>
     );
 

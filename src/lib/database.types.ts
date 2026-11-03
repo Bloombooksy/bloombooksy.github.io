@@ -16,6 +16,8 @@ type Salon = {
   zapisy_token: string;
   zapisy_wlaczone: boolean;
   zapisy_wyprzedzenie_h: number;
+  adres: string;
+  telefon: string;
 };
 
 type Rel = {
@@ -50,6 +52,8 @@ type Wizyta = {
   usluga_id: string | null;
   usluga_nazwa: string;
   zrodlo: ZrodloWizyty;
+  kod: string;
+  odwolala_klientka: boolean;
 };
 
 type Klientka = {
@@ -107,6 +111,8 @@ export type Database = {
         Args: { p_token: string; p_usluga: string; p_start: string; p_imie: string; p_telefon: string; p_notatka?: string };
         Returns: Json;
       };
+      wizyta_info: { Args: { p_kod: string }; Returns: Json };
+      wizyta_odwolaj: { Args: { p_kod: string }; Returns: Json };
     };
     Enums: {
       platnosc: Platnosc;

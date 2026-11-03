@@ -6,9 +6,9 @@ Znajome klientki zapisują się same przez tajny link, a dzień przed wizytą do
 
 > Projekt zbudowany dla prawdziwego salonu, który wcześniej korzystał z papierowego terminarza. Celem było **jak najbardziej skrócić i uprościć** codzienną pracę właścicielki.
 
-| Dziś | Po klientce | Zapisy przez link |
-| --- | --- | --- |
-| ![Ekran dnia](docs/dzis.png) | ![Wpisywanie kwoty](docs/zakoncz.png) | ![Zapisy dla klientek](docs/zapisy.png) |
+| Dziś | Po klientce | Zapisy przez link | Moja wizyta |
+| --- | --- | --- | --- |
+| ![Ekran dnia](docs/dzis.png) | ![Wpisywanie kwoty](docs/zakoncz.png) | ![Zapisy dla klientek](docs/zapisy.png) | ![Strona wizyty klientki](docs/moja-wizyta.png) |
 
 ![Kalendarz tygodnia](docs/kalendarz.png)
 
@@ -24,6 +24,11 @@ Znajome klientki zapisują się same przez tajny link, a dzień przed wizytą do
   - nie widzi danych innych osób;
   - zapis trafia do salonu jako „do potwierdzenia”;
   - link można w każdej chwili wyłączyć albo wygenerować nowy.
+- **Strona „Moja wizyta” dla klientki**:
+  - po zapisie (albo z SMS-a od salonu) klientka ma swoją stronę wizyty ze statusem na żywo (czeka, potwierdzona, odwołana);
+  - jednym tapnięciem dodaje wizytę do kalendarza Google albo iPhone/Outlook (plik `.ics` z przypomnieniem 2 h wcześniej);
+  - widzi adres z mapą i telefon, może sama odwołać wizytę do określonego czasu przed nią.
+- **Wiadomości jednym tapnięciem**: z karty klientki właścicielka wysyła link do zapisów z wpisanym już imieniem i numerem, a po dodaniu lub potwierdzeniu wizyty SMS z terminem. Otwiera się aplikacja SMS w jej telefonie z gotową treścią, więc nic to nie kosztuje.
 - **Przypomnienia SMS** dzień przed wizytą o wybranej godzinie, z własnym szablonem treści i podglądem liczby znaków.
 - **Podsumowanie** tygodnia i miesiąca: utarg dzień po dniu, średnia na klientkę, odsetek nieobecności, najlepsze usługi.
 - **PWA**: aplikację można dodać do ekranu głównego telefonu i działa jak natywna.

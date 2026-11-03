@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { AtSign, Phone, Plus, Search, Users } from "lucide-react";
-import { useHistoriaKlientki, useKlientki, useSalonId, useZapis } from "../lib/dane";
+import { useHistoriaKlientki, useKlientki, useSalon, useSalonId, useZapis } from "../lib/dane";
+import { linkZapisow, trescZaproszenia } from "../lib/wiadomosci";
+import { WyslijSms } from "../components/WyslijSms";
 import type { KlientkaRow } from "../lib/database.types";
 import { dzienKey, godzina, krotkaData } from "../lib/czas";
 import { podsumuj, zl } from "../lib/pieniadze";
@@ -57,6 +59,7 @@ export default function Klientki() {
 
 function KlientkaModal({ k, onClose }: { k: KlientkaRow | null; onClose: () => void }) {
   const salonId = useSalonId();
+  const { data: salon } = useSalon();
   const api = useZapis("klientki", ["klientki", "wizyty"]);
   const { data: historia = [] } = useHistoriaKlientki(k?.id ?? null);
   const [f, setF] = useState({
@@ -110,6 +113,11 @@ function KlientkaModal({ k, onClose }: { k: KlientkaRow | null; onClose: () => v
       }
     >
       <form id="kl-form" onSubmit={zapisz} className="space-y-4">
+        {k && k.telefon && salon?.zapisy_wlaczone && (
+          <WyslijSms className="w-full" glowny telefon={k.telefon} tresc={trescZaproszenia(k.imie, linkZapisow(salon.zapisy_token, { imie: k.imie, telefon: k.telefon }))}>
+            Wyślij link do zapisów
+          </WyslijSms>
+        )}
         {k && (
           <div className="flex gap-2">
             {k.telefon && (

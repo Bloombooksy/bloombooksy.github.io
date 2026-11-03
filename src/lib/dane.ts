@@ -142,3 +142,21 @@ export function useZmienSalon() {
     onSuccess: (s) => qc.setQueryData(["salon"], s),
   });
 }
+
+/** Przyszłe wizyty odwołane przez klientki ze strony „Moja wizyta”. */
+export function useOdwolanePrzezKlientki() {
+  return useQuery({
+    queryKey: ["wizyty", "odwolane-klientki"],
+    queryFn: async () =>
+      ok<WizytaZKlientka[]>(
+        (await supabase
+          .from("wizyty")
+          .select(WIZYTA_SELECT)
+          .eq("odwolala_klientka", true)
+          .eq("status", "odwolana")
+          .gte("start", new Date().toISOString())
+          .order("start")) as { data: WizytaZKlientka[] | null; error: unknown },
+      ),
+    refetchInterval: 60_000,
+  });
+}
