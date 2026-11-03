@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Manrope Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Fraunces Variable", ui-serif, Georgia, serif;
+
+  --color-krem: #f7f1ea;
+  --color-papier: #fffdfa;
+  --color-piasek: #ece2d6;
+  --color-linia: #e2d6c8;
+  --color-atrament: #2a211d;
+  --color-szary: #76675d;
+  --color-mokka: #7a5a47;
+  --color-zloto: #b98a4e;
+  --color-roz: #c9707a;
+  --color-roz-jasny: #f6e3e3;
+  --color-ziel: #4f7a5b;
+  --color-ziel-jasny: #e3eee5;
+  --color-bursztyn: #a8661c;
+  --color-bursztyn-jasny: #f8ead6;
+}
+
+@layer base {
+  html { -webkit-tap-highlight-color: transparent; }
+  body {
+    @apply bg-krem text-atrament font-sans antialiased;
+    font-feature-settings: "tnum" 1;
+  }
+  input, select, textarea, button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--color-zloto); outline-offset: 2px; }
+}
+
+@utility pole {
+  @apply w-full rounded-xl border border-linia bg-papier px-3.5 py-3 text-[15px] outline-none transition placeholder:text-szary/60 focus:border-zloto focus:ring-2 focus:ring-zloto/20;
+}
+@utility etykieta { @apply mb-1.5 block text-[13px] font-semibold text-szary; }
+@utility btn {
+  @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-[15px] font-semibold transition active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50;
+}
+@utility btn-glowny { @apply btn bg-atrament text-krem hover:bg-mokka; }
+@utility btn-jasny { @apply btn border border-linia bg-papier hover:bg-piasek/60; }
+@utility btn-zielony { @apply btn bg-ziel text-white hover:brightness-110; }
+@utility btn-cichy { @apply btn text-szary hover:bg-piasek/60 hover:text-atrament; }
+@utility karta { @apply rounded-2xl border border-linia bg-papier; }
+@utility naglowek { @apply font-serif text-[28px] leading-tight font-semibold tracking-tight; }
+
+.pb-safe { padding-bottom: max(env(safe-area-inset-bottom), 0px); }
