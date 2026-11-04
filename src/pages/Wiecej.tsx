@@ -1,5 +1,8 @@
+import { useEffect, useState } from "react";
+import { DEMO } from "../lib/oferta";
 import { Link } from "react-router-dom";
-import { BarChart3, ChevronRight, Clock, Link2, LogOut, MessageSquareText, Sparkles, Users } from "lucide-react";
+import { ZmianaHasla } from "../components/ZmianaHasla";
+import { BarChart3, ChevronRight, Clock, KeyRound, Link2, LogOut, MessageSquareText, Sparkles, Users } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useCzyWlascicielka, useSalon } from "../lib/dane";
 
@@ -15,6 +18,11 @@ const POZYCJE = [
 export default function Wiecej() {
   const { data: salon } = useSalon();
   const wlascicielka = useCzyWlascicielka();
+  const [haslo, setHaslo] = useState(false);
+  const [demo, setDemo] = useState(true);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setDemo(data.user?.email === DEMO.email));
+  }, []);
   const pozycje = POZYCJE.filter((p) => wlascicielka || ("kazdy" in p && p.kazdy));
   return (
     <div className="mx-auto max-w-2xl space-y-4">
@@ -35,9 +43,17 @@ export default function Wiecej() {
           </li>
         ))}
       </ul>
-      <button className="btn-jasny w-full" onClick={() => supabase.auth.signOut()}>
-        <LogOut className="size-4" /> Wyloguj
-      </button>
+      <div className="grid gap-2 sm:grid-cols-2">
+        {!demo && (
+          <button className="btn-jasny" onClick={() => setHaslo(true)}>
+            <KeyRound className="size-4" /> Zmień hasło
+          </button>
+        )}
+        <button className="btn-jasny" onClick={() => supabase.auth.signOut()}>
+          <LogOut className="size-4" /> Wyloguj
+        </button>
+      </div>
+      {haslo && <ZmianaHasla onClose={() => setHaslo(false)} />}
     </div>
   );
 }
