@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
 import { DEMO } from "../lib/oferta";
+import { ZnakBloomly } from "./ZnakBloomly";
 import { NavLink } from "react-router-dom";
 import { CalendarDays, Menu, Sun, Users } from "lucide-react";
 import { useKontekst } from "../lib/dane";
@@ -17,8 +18,11 @@ const NAV = [
 
 export function Logo({ maly }: { maly?: boolean }) {
   return (
-    <span className={`font-serif font-semibold tracking-tight ${maly ? "text-lg" : "text-2xl"}`}>
-      Bloom<span className="text-zloto">ly</span>
+    <span className={`inline-flex items-center gap-1.5 font-serif font-semibold tracking-tight ${maly ? "text-lg" : "text-2xl"}`}>
+      <ZnakBloomly size={maly ? 22 : 30} />
+      <span>
+        Bloom<span className="text-[#c2185b]">ly</span>
+      </span>
     </span>
   );
 }
