@@ -1,5 +1,7 @@
 -- Salon demo do pokazywania Bloomly: konto demo@bloomly.example (hasło publiczne, podane na stronie),
 -- trzy osoby w zespole, cennik, klientki i wizyty wokół dzisiejszego dnia. Odświeżany co noc.
+-- STAN: salon demo został utworzony jednorazowo (wersja bez usuwania danych); tę migrację z nocnym odświeżaniem
+-- trzeba zastosować po zatwierdzeniu przez właściciela projektu (zawiera DELETE).
 
 create or replace function prywatne.demo_odswiez() returns void
 language plpgsql security definer set search_path = public, extensions as $$
