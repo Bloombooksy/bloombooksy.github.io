@@ -17,6 +17,7 @@ const Sms = lazy(() => import("./pages/Sms"));
 const Podsumowanie = lazy(() => import("./pages/Podsumowanie"));
 const Zapisy = lazy(() => import("./pages/Zapisy"));
 const Landing = lazy(() => import("./pages/Landing"));
+const JakToDziala = lazy(() => import("./pages/JakToDziala"));
 const Zespol = lazy(() => import("./pages/Zespol"));
 const MojaWizyta = lazy(() => import("./pages/MojaWizyta"));
 
@@ -73,6 +74,14 @@ export function App() {
           element={
             <Suspense fallback={<Ladowanie />}>
               <Zapisy />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/jak-to-dziala"
+          element={
+            <Suspense fallback={<Ladowanie />}>
+              <JakToDziala />
             </Suspense>
           }
         />
