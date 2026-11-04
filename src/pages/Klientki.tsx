@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { AtSign, Phone, Plus, Search, Users } from "lucide-react";
+import { AtSign, FileUp, Phone, Plus, Search, Users } from "lucide-react";
+import { ImportKlientek } from "../components/ImportKlientek";
 import { useHistoriaKlientki, useKlientki, useSalon, useSalonId, useZapis } from "../lib/dane";
 import { linkZapisow, trescZaproszenia } from "../lib/wiadomosci";
 import { WyslijSms } from "../components/WyslijSms";
@@ -15,6 +16,7 @@ export default function Klientki() {
   const { data = [], isLoading } = useKlientki();
   const [q, setQ] = useState("");
   const [otwarta, setOtwarta] = useState<KlientkaRow | "nowa" | null>(null);
+  const [importOtwarty, setImportOtwarty] = useState(false);
   const lista = useMemo(() => {
     const t = q.trim().toLowerCase();
     const c = t.replace(/\D/g, "");
@@ -25,9 +27,14 @@ export default function Klientki() {
     <div className="mx-auto max-w-2xl space-y-4">
       <div className="flex items-center justify-between gap-3">
         <h1 className="naglowek">Klientki</h1>
-        <button className="btn-glowny" onClick={() => setOtwarta("nowa")}>
-          <Plus className="size-5" /> Dodaj
-        </button>
+        <div className="flex gap-2">
+          <button className="btn-jasny px-3" onClick={() => setImportOtwarty(true)} aria-label="Import z pliku">
+            <FileUp className="size-5" /> <span className="hidden sm:inline">Import</span>
+          </button>
+          <button className="btn-glowny" onClick={() => setOtwarta("nowa")}>
+            <Plus className="size-5" /> Dodaj
+          </button>
+        </div>
       </div>
       <label className="relative block">
         <Search className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-szary" />
@@ -52,6 +59,7 @@ export default function Klientki() {
           ))}
         </ul>
       )}
+      {importOtwarty && <ImportKlientek onClose={() => setImportOtwarty(false)} />}
       {otwarta && <KlientkaModal k={otwarta === "nowa" ? null : otwarta} onClose={() => setOtwarta(null)} />}
     </div>
   );

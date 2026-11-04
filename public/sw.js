@@ -1,6 +1,6 @@
 // Prosty service worker: aplikacja otwiera się z ekranu głównego także przy słabym zasięgu.
 // Dane (wizyty) zawsze idą z sieci – w cache trzymamy tylko pliki aplikacji.
-const CACHE = "bloombooksy-v1";
+const CACHE = "bloomly-v1";
 
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (e) =>

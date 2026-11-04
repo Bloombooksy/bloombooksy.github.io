@@ -14,10 +14,13 @@ const SMS_TXT: Record<string, string> = {
 
 export function WizytaKarta({
   w,
+  osoba,
   onOtworz,
   onZakoncz,
 }: {
   w: WizytaZKlientka;
+  /** imię i kolor osoby – pokazujemy, gdy w salonie pracuje kilka osób */
+  osoba?: { imie: string; kolor: string } | undefined;
   onOtworz: () => void;
   onZakoncz: () => void;
 }) {
@@ -39,7 +42,15 @@ export function WizytaKarta({
               w.status !== "potwierdzona" && <Status s={w.status} />
             )}
           </div>
-          <div className="mt-0.5 truncate text-[14px] text-szary">{w.usluga_nazwa || "Wizyta"}</div>
+          <div className="mt-0.5 flex items-center gap-2 truncate text-[14px] text-szary">
+            {osoba && (
+              <span className="inline-flex items-center gap-1.5 font-semibold" style={{ color: osoba.kolor }}>
+                <span className="size-2 rounded-full" style={{ background: osoba.kolor }} />
+                {osoba.imie} ·
+              </span>
+            )}
+            <span className="truncate">{w.usluga_nazwa || "Wizyta"}</span>
+          </div>
           <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-szary">
             {zrobiona ? (
               <span className="font-bold text-ziel">

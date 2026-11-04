@@ -7,23 +7,26 @@ import { Blad, Przelacznik } from "../components/ui";
 import { Wstecz } from "../components/Wstecz";
 import type { SalonRow } from "../lib/database.types";
 import { linkZapisow } from "../lib/wiadomosci";
+import { KOLORY_SALONU, poprawnySlug, slugify } from "../lib/branze";
 
 export default function LinkZapisow() {
   const { data: s } = useSalon();
   const zmien = useZmienSalon();
   const qc = useQueryClient();
   const [nazwa, setNazwa] = useState("");
+  const [slug, setSlug] = useState("");
   const [adres, setAdres] = useState("");
   const [tel, setTel] = useState("");
   const [skopiowano, setSkopiowano] = useState(false);
   const [blad, setBlad] = useState("");
   useEffect(() => {
     setNazwa(s?.nazwa ?? "");
+    setSlug(s?.slug ?? slugify(s?.nazwa ?? ""));
     setAdres(s?.adres ?? "");
     setTel(s?.telefon ?? "");
-  }, [s?.nazwa, s?.adres, s?.telefon]);
+  }, [s?.nazwa, s?.adres, s?.telefon, s?.slug]);
   if (!s) return null;
-  const link = linkZapisow(s.zapisy_token);
+  const link = linkZapisow(s.slug ?? s.zapisy_token);
   const tekst = `Hej! Tu możesz sama zapisać się do mnie na paznokcie 💅 ${link}`;
 
   const ustaw = (z: Partial<Omit<SalonRow, "id">>) =>
@@ -39,7 +42,7 @@ export default function LinkZapisow() {
     if (!window.confirm("Stary link przestanie działać. Wygenerować nowy?")) return;
     const { error } = await supabase.rpc("nowy_link_zapisow");
     if (error) return setBlad(komunikat(error));
-    await qc.invalidateQueries({ queryKey: ["salon"] });
+    await qc.invalidateQueries({ queryKey: ["kontekst"] });
   }
 
   return (
@@ -47,7 +50,7 @@ export default function LinkZapisow() {
       <Wstecz />
       <h1 className="naglowek">Zapisy przez link</h1>
       <p className="text-[15px] text-szary">
-        Wyślij ten link znajomym – zobaczą tylko wolne godziny (bez nazwisk innych klientek) i same wybiorą termin. Zapis pojawi się u Ciebie jako
+        Wyślij ten link klientkom – zobaczą tylko wolne godziny (bez nazwisk innych klientek) i same wybiorą termin. Zapis pojawi się u Ciebie jako
         „do potwierdzenia”, a klientka dostanie swoją stronę wizyty z przyciskiem „Dodaj do kalendarza”. Konkretnej klientce najprościej wysłać link z
         jej karty w zakładce Klientki – będzie miała już wpisane imię i numer.
       </p>
@@ -75,6 +78,62 @@ export default function LinkZapisow() {
             <button className="btn-jasny" onClick={nowyLink}>
               <RefreshCw className="size-4" /> Nowy link
             </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="karta space-y-3 p-4">
+        <label className="etykieta" htmlFor="sl">
+          Adres Twojej strony zapisów
+        </label>
+        <div className="flex items-stretch overflow-hidden rounded-xl border border-linia bg-papier focus-within:border-zloto">
+          <span className="flex items-center bg-piasek/60 px-3 text-[13px] text-szary">…/zapisy/</span>
+          <input
+            id="sl"
+            className="min-w-0 flex-1 bg-transparent px-3 py-3 text-[15px] outline-none"
+            value={slug}
+            onChange={(e) => setSlug(slugify(e.target.value))}
+            placeholder="np. studio-ola"
+          />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            className="btn-glowny"
+            disabled={!poprawnySlug(slug) || slug === s.slug}
+            onClick={() =>
+              zmien.mutate(
+                { id: s.id, slug },
+                { onError: (e) => setBlad((e as { code?: string }).code === "23505" ? "Ten adres jest już zajęty – wybierz inny." : komunikat(e)) },
+              )
+            }
+          >
+            Zapisz adres
+          </button>
+          {s.slug && (
+            <button className="btn-cichy" onClick={() => ustaw({ slug: null })}>
+              Wróć do tajnego linku
+            </button>
+          )}
+        </div>
+        <p className="text-[13px] text-szary">
+          {s.slug
+            ? "Ten adres możesz wstawić na Instagram, Facebooka i do wizytówki Google – każdy może się przez niego zapisać."
+            : "Teraz masz tajny link – działa tylko u osób, którym go wyślesz. Ustaw adres, jeśli chcesz zapisy dla wszystkich (np. link w bio na Instagramie)."}
+        </p>
+        <div>
+          <span className="etykieta">Kolor salonu na stronie zapisów</span>
+          <div className="flex flex-wrap gap-2">
+            {KOLORY_SALONU.map((k) => (
+              <button
+                key={k}
+                type="button"
+                aria-label={`Kolor ${k}`}
+                aria-pressed={s.kolor === k}
+                onClick={() => ustaw({ kolor: k })}
+                className="size-9 rounded-full ring-offset-2 ring-offset-papier aria-pressed:ring-2 aria-pressed:ring-atrament"
+                style={{ background: k }}
+              />
+            ))}
           </div>
         </div>
       </div>

@@ -1,7 +1,7 @@
 {
-  "name": "BloomBooksy",
-  "short_name": "BloomBooksy",
-  "description": "Wizyty, dzień pracy, utarg i zapisy klientek.",
+  "name": "Bloomly",
+  "short_name": "Bloomly",
+  "description": "Kalendarz wizyt, dzień pracy, utarg i zapisy klientek dla salonów beauty.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

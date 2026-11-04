@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useWizyty } from "../lib/dane";
+import { useCzyWlascicielka, useJa, useWizyty, useZespol } from "../lib/dane";
 import { DNI_KROTKO, dniMiesiaca, dodajDni, dzienKey, dzienTygodnia, krotkaData, nazwaMiesiaca, poczatekMiesiaca, tydzien } from "../lib/czas";
 import { PLATNOSCI, podsumuj, zl } from "../lib/pieniadze";
 import type { Platnosc } from "../lib/database.types";
@@ -12,7 +12,13 @@ export default function Podsumowanie() {
   const [tryb, setTryb] = useState<"tydzien" | "miesiac">("tydzien");
   const [baza, setBaza] = useState(dzis);
   const dni = tryb === "tydzien" ? tydzien(baza) : dniMiesiaca(baza);
-  const { data: wizyty = [] } = useWizyty(dni[0]!, dni.at(-1)!);
+  const { data: wszystkie = [] } = useWizyty(dni[0]!, dni.at(-1)!);
+  const wlascicielka = useCzyWlascicielka();
+  const ja = useJa();
+  const { wszyscy: zespol, wiele } = useZespol();
+  // osoba z zespołu widzi tylko swoje wyniki
+  const wizyty = wlascicielka ? wszystkie : wszystkie.filter((w) => w.pracownik_id === ja);
+  const naOsobe = wlascicielka && wiele ? zespol.map((o) => ({ o, ...podsumuj(wszystkie.filter((w) => w.pracownik_id === o.id)) })).filter((x) => x.o.aktywny || x.zrobione) : [];
   const p = podsumuj(wizyty);
 
   const naDzien = dni.map((d) => ({ d, ...podsumuj(wizyty.filter((w) => dzienKey(w.start) === d)) }));
@@ -105,6 +111,26 @@ export default function Podsumowanie() {
             ))}
         </section>
       </div>
+      {naOsobe.length > 0 && (
+        <section className="karta p-4">
+          <h2 className="mb-2 font-bold">Zespół</h2>
+          <div className="grid grid-cols-[1fr_auto_auto] gap-x-4 gap-y-1.5 text-[15px]">
+            <span className="text-[12px] font-bold text-szary uppercase">Osoba</span>
+            <span className="text-right text-[12px] font-bold text-szary uppercase">Klientki</span>
+            <span className="text-right text-[12px] font-bold text-szary uppercase">Utarg</span>
+            {naOsobe.map(({ o, zrobione, razem }) => (
+              <div key={o.id} className="contents">
+                <span className="flex items-center gap-2 truncate">
+                  <span className="size-2.5 shrink-0 rounded-full" style={{ background: o.kolor }} />
+                  {o.imie}
+                </span>
+                <span className="text-right">{zrobione}</span>
+                <span className="text-right font-semibold">{zl(razem)}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
       {tryb === "miesiac" && <p className="text-[13px] text-szary">Miesiąc liczony od {krotkaData(poczatekMiesiaca(baza))}.</p>}
     </div>
   );

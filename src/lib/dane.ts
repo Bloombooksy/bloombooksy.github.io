@@ -1,6 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "./supabase";
-import type { Database, GodzinyRow, KlientkaRow, PrzerwaRow, SalonRow, UslugaRow, WizytaRow } from "./database.types";
+import type {
+  Database,
+  GodzinyPracownikaRow,
+  GodzinyRow,
+  KlientkaRow,
+  PracownikRow,
+  PrzerwaRow,
+  Rola,
+  SalonRow,
+  UslugaPracownikRow,
+  UslugaRow,
+  WizytaRow,
+} from "./database.types";
 import { dodajDni, wStrefie } from "./czas";
 
 type Tabele = Database["public"]["Tables"];
@@ -12,18 +24,62 @@ function ok<T>(r: { data: T | null; error: unknown }): T {
   return r.data as T;
 }
 
-export function useSalon() {
+export type Kontekst = { salon: SalonRow; rola: Rola; pracownik_id: string };
+
+/** Kim jest zalogowana osoba: jej salon, rola i „ja” w zespole. null = konto bez salonu (kreator). */
+export function useKontekst() {
   return useQuery({
-    queryKey: ["salon"],
-    queryFn: async () => ok<SalonRow>(await supabase.rpc("moj_salon")),
+    queryKey: ["kontekst"],
+    queryFn: async () => ok<Kontekst | null>((await supabase.rpc("moj_kontekst")) as { data: Kontekst | null; error: unknown }),
     staleTime: 5 * 60_000,
   });
 }
 
+export function useSalon() {
+  const q = useKontekst();
+  return { ...q, data: q.data?.salon };
+}
+
 /** Salon jest zawsze załadowany w części dla zalogowanych (pilnuje tego Layout). */
 export function useSalonId(): string {
-  const { data } = useSalon();
-  return data?.id ?? "";
+  return useKontekst().data?.salon.id ?? "";
+}
+
+export function useCzyWlascicielka(): boolean {
+  return useKontekst().data?.rola === "wlascicielka";
+}
+
+export function useJa(): string {
+  return useKontekst().data?.pracownik_id ?? "";
+}
+
+export function usePracownicy() {
+  return useQuery({
+    queryKey: ["pracownicy"],
+    queryFn: async () =>
+      ok<PracownikRow[]>(await supabase.from("pracownicy").select("*").order("kolejnosc").order("created_at")),
+  });
+}
+
+/** Aktywne osoby w zespole; gdy jest tylko jedna, aplikacja nie pokazuje wyboru osoby. */
+export function useZespol() {
+  const { data = [], ...q } = usePracownicy();
+  const aktywni = data.filter((p) => p.aktywny);
+  return { ...q, wszyscy: data, aktywni, wiele: aktywni.length > 1 };
+}
+
+export function useUslugiPracownicy() {
+  return useQuery({
+    queryKey: ["uslugi_pracownicy"],
+    queryFn: async () => ok<UslugaPracownikRow[]>(await supabase.from("uslugi_pracownicy").select("*")),
+  });
+}
+
+export function useGodzinyPracownikow() {
+  return useQuery({
+    queryKey: ["godziny_pracownikow"],
+    queryFn: async () => ok<GodzinyPracownikaRow[]>(await supabase.from("godziny_pracownikow").select("*").order("dzien")),
+  });
 }
 
 export function useUslugi() {
@@ -139,7 +195,7 @@ export function useZmienSalon() {
       const { id, ...reszta } = z;
       return ok<SalonRow>(await supabase.from("salony").update(reszta).eq("id", id).select().single());
     },
-    onSuccess: (s) => qc.setQueryData(["salon"], s),
+    onSuccess: (s) => qc.setQueryData<Kontekst | null>(["kontekst"], (k) => (k ? { ...k, salon: s } : k)),
   });
 }
 

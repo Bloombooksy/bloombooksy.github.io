@@ -16,6 +16,8 @@ const Link = lazy(() => import("./pages/LinkZapisow"));
 const Sms = lazy(() => import("./pages/Sms"));
 const Podsumowanie = lazy(() => import("./pages/Podsumowanie"));
 const Zapisy = lazy(() => import("./pages/Zapisy"));
+const Landing = lazy(() => import("./pages/Landing"));
+const Zespol = lazy(() => import("./pages/Zespol"));
 const MojaWizyta = lazy(() => import("./pages/MojaWizyta"));
 
 function useSesja() {
@@ -31,7 +33,16 @@ function useSesja() {
 function Panel() {
   const sesja = useSesja();
   if (sesja === undefined) return <Ladowanie />;
-  if (!sesja) return <Logowanie />;
+  if (!sesja)
+    return (
+      <Suspense fallback={<Ladowanie />}>
+        <Routes>
+          <Route index element={<Landing />} />
+          <Route path="logowanie" element={<Logowanie />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
+    );
   return (
     <Layout>
       <Suspense fallback={<Ladowanie />}>
@@ -45,6 +56,7 @@ function Panel() {
           <Route path="godziny" element={<Godziny />} />
           <Route path="link" element={<Link />} />
           <Route path="sms" element={<Sms />} />
+          <Route path="zespol" element={<Zespol />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>

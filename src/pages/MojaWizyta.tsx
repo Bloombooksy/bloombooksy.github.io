@@ -8,9 +8,12 @@ import { linkGoogle, pobierzIcs, type Wydarzenie } from "../lib/kalendarz";
 import { ladnyTelefon } from "../lib/sms";
 import type { StatusWizyty } from "../lib/database.types";
 import { Blad, Ladowanie } from "../components/ui";
+import { Ekran } from "../components/EkranKlientki";
 
 type Info = {
   salon: string;
+  kolor?: string;
+  pracownik?: string | null;
   adres: string;
   telefon: string;
   usluga: string;
@@ -82,7 +85,7 @@ export default function MojaWizyta() {
   }
 
   return (
-    <Ekran>
+    <Ekran kolor={w.kolor}>
       <header className="text-center">
         <p className="text-[12px] font-bold tracking-[0.2em] text-zloto uppercase">{w.salon}</p>
         <h1 className="mt-1 font-serif text-[30px] leading-tight font-semibold">
@@ -103,7 +106,12 @@ export default function MojaWizyta() {
           <p className="flex items-center gap-2 text-[17px] font-semibold">
             <Clock className="size-5 text-szary" /> {godzina(w.start)} – {godzina(w.koniec)}
           </p>
-          {w.usluga && <p className="text-[16px] text-szary">{w.usluga}</p>}
+          {w.usluga && (
+            <p className="text-[16px] text-szary">
+              {w.usluga}
+              {w.pracownik && <> · u {w.pracownik}</>}
+            </p>
+          )}
           {w.adres && (
             <a className="flex items-center gap-2 text-[15px] underline decoration-linia underline-offset-4" target="_blank" rel="noreferrer" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(w.adres)}`}>
               <MapPin className="size-5 text-szary" /> {w.adres}
@@ -153,6 +161,4 @@ export default function MojaWizyta() {
   );
 }
 
-function Ekran({ children }: { children: React.ReactNode }) {
-  return <div className="mx-auto min-h-dvh max-w-md space-y-6 px-5 py-10">{children}</div>;
-}
+

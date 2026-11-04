@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { supabase, komunikat } from "../lib/supabase";
 import { Blad } from "../components/ui";
 import { Logo } from "../components/Layout";
@@ -6,7 +7,8 @@ import { Logo } from "../components/Layout";
 type Tryb = "logowanie" | "rejestracja" | "reset";
 
 export function Logowanie() {
-  const [tryb, setTryb] = useState<Tryb>("logowanie");
+  const [params] = useSearchParams();
+  const [tryb, setTryb] = useState<Tryb>(params.has("rejestracja") ? "rejestracja" : "logowanie");
   const [email, setEmail] = useState("");
   const [haslo, setHaslo] = useState("");
   const [blad, setBlad] = useState("");
@@ -43,7 +45,9 @@ export function Logowanie() {
     <div className="grid min-h-dvh place-items-center px-5 py-10">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <Logo />
+          <Link to="/" aria-label="Strona główna Bloomly">
+            <Logo />
+          </Link>
           <p className="mt-3 text-[15px] text-szary">Twoje wizyty, utarg i zapisy w jednym miejscu.</p>
         </div>
         <form onSubmit={wyslij} className="karta space-y-4 p-5">

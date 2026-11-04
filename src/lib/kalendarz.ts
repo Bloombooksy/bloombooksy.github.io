@@ -21,11 +21,11 @@ export function plikIcs(e: Wydarzenie, teraz = new Date().toISOString()): string
   const linie = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Bloom Beauty//BloomBooksy//PL",
+    "PRODID:-//Bloomly//Kalendarz//PL",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",
-    `UID:${e.uid ?? utc(e.start)}@bloombooksy`,
+    `UID:${e.uid ?? utc(e.start)}@bloomly`,
     `DTSTAMP:${utc(teraz)}`,
     `DTSTART:${utc(e.start)}`,
     `DTEND:${utc(e.koniec)}`,

@@ -1,9 +1,12 @@
-import type { ReactNode } from "react";
+import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
+import { DEMO } from "../lib/oferta";
 import { NavLink } from "react-router-dom";
 import { CalendarDays, Menu, Sun, Users } from "lucide-react";
-import { useSalon } from "../lib/dane";
+import { useKontekst } from "../lib/dane";
+
+const Kreator = lazy(() => import("../pages/Kreator"));
 import { Blad, Ladowanie } from "./ui";
-import { komunikat } from "../lib/supabase";
+import { komunikat, supabase } from "../lib/supabase";
 
 const NAV = [
   { to: "/", txt: "Dziś", ikona: Sun, end: true },
@@ -15,18 +18,29 @@ const NAV = [
 export function Logo({ maly }: { maly?: boolean }) {
   return (
     <span className={`font-serif font-semibold tracking-tight ${maly ? "text-lg" : "text-2xl"}`}>
-      Bloom<span className="text-zloto">Booksy</span>
+      Bloom<span className="text-zloto">ly</span>
     </span>
   );
 }
 
 export function Layout({ children }: { children: ReactNode }) {
-  const salon = useSalon();
+  const k = useKontekst();
+  const [demo, setDemo] = useState(false);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setDemo(data.user?.email === DEMO.email));
+  }, []);
+  if (k.isSuccess && !k.data)
+    return (
+      <Suspense fallback={<Ladowanie />}>
+        <Kreator />
+      </Suspense>
+    );
   return (
     <div className="mx-auto flex min-h-dvh max-w-6xl">
       <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col gap-1 border-r border-linia px-4 py-6 md:flex">
         <div className="mb-6 px-2">
           <Logo maly />
+          {k.data && <p className="mt-1 truncate text-[13px] text-szary">{k.data.salon.nazwa}</p>}
         </div>
         {NAV.map(({ to, txt, ikona: I, end }) => (
           <NavLink
@@ -43,7 +57,17 @@ export function Layout({ children }: { children: ReactNode }) {
       </aside>
 
       <main className="min-w-0 flex-1 px-4 pt-5 pb-28 sm:px-6 md:pb-10">
-        {salon.isLoading ? <Ladowanie /> : salon.error ? <Blad>{komunikat(salon.error)}</Blad> : children}
+        {demo && (
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-[#fde9f0] px-4 py-3 text-[14px] text-[#8a1543]">
+            <span>
+              <b>Salon demo.</b> Klikaj śmiało – zmiany znikają co noc.
+            </span>
+            <button className="font-bold underline" onClick={() => supabase.auth.signOut()}>
+              Wyjdź z demo
+            </button>
+          </div>
+        )}
+        {k.isLoading ? <Ladowanie /> : k.error ? <Blad>{komunikat(k.error)}</Blad> : children}
       </main>
 
       <nav className="pb-safe fixed inset-x-0 bottom-0 z-20 border-t border-linia bg-papier/95 backdrop-blur md:hidden" aria-label="Menu">

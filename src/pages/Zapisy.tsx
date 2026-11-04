@@ -7,16 +7,21 @@ import { DNI_KROTKO, dodajDni, dzienKey, dzienTygodnia, godzina, opisCzasu, opis
 import { zl } from "../lib/pieniadze";
 import { normalizujTelefon } from "../lib/sms";
 import { Blad, Ladowanie } from "../components/ui";
+import { Ekran } from "../components/EkranKlientki";
 
+type Osoba = { id: string; imie: string; kolor: string };
 type Info = {
   salon: string;
+  kolor?: string;
   horyzont_dni: number;
   dni_pracy: number[];
-  uslugi: { id: string; nazwa: string; czas_min: number; cena: number }[];
+  uslugi: { id: string; nazwa: string; czas_min: number; cena: number; pracownicy?: string[] }[];
+  pracownicy?: Osoba[];
 };
 type Wynik = { id: string; kod: string; salon: string; usluga: string; start: string };
+type Wolny = { start: string; pracownik_id: string };
 
-/** Publiczna strona zapisów dla znajomych (tajny link) – bez logowania, widać tylko wolne godziny. */
+/** Publiczna strona zapisów (link salonu) – bez logowania, widać tylko wolne godziny. */
 export default function Zapisy() {
   const { token = "" } = useParams();
   const [params] = useSearchParams();
@@ -30,6 +35,8 @@ export default function Zapisy() {
     },
   });
   const [uslugaId, setUslugaId] = useState("");
+  // "" = ktokolwiek
+  const [osobaId, setOsobaId] = useState("");
   const [dzien, setDzien] = useState("");
   const [start, setStart] = useState("");
   // link wysłany przez Madzię może mieć już imię i numer klientki
@@ -48,11 +55,16 @@ export default function Zapisy() {
 
   const wolne = useQuery({
     enabled: !!uslugaId && !!dzien,
-    queryKey: ["zapisy-wolne", token, uslugaId, dzien],
+    queryKey: ["zapisy-wolne", token, uslugaId, dzien, osobaId],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("zapisy_wolne", { p_token: token, p_usluga: uslugaId, p_dzien: dzien });
+      const { data, error } = await supabase.rpc("zapisy_wolne_v2", {
+        p_token: token,
+        p_usluga: uslugaId,
+        p_dzien: dzien,
+        p_pracownik: osobaId || null,
+      });
       if (error) throw error;
-      return (data ?? []) as string[];
+      return (data ?? []) as Wolny[];
     },
   });
 
@@ -61,19 +73,29 @@ export default function Zapisy() {
   }, [start]);
 
   const usluga = info.data?.uslugi.find((u) => u.id === uslugaId);
+  // osoby, które robią wybraną usługę (pusta lista przypisań = wszyscy)
+  const osoby = useMemo(() => {
+    const wszyscy = info.data?.pracownicy ?? [];
+    const tylko = usluga?.pracownicy ?? [];
+    return tylko.length ? wszyscy.filter((p) => tylko.includes(p.id)) : wszyscy;
+  }, [info.data, usluga]);
+  const wyborOsoby = osoby.length > 1;
+  const imieOsoby = (id: string) => info.data?.pracownicy?.find((p) => p.id === id)?.imie;
+  const wybranyTermin = wolne.data?.find((w) => w.start === start);
 
   async function zarezerwuj(e: React.FormEvent) {
     e.preventDefault();
     setBlad("");
     if (!normalizujTelefon(telefon)) return setBlad("Podaj poprawny numer telefonu.");
     setWysylam(true);
-    const { data, error } = await supabase.rpc("zapisy_rezerwuj", {
+    const { data, error } = await supabase.rpc("zapisy_rezerwuj_v2", {
       p_token: token,
       p_usluga: uslugaId,
       p_start: start,
       p_imie: imie,
       p_telefon: telefon,
       p_notatka: notatka,
+      p_pracownik: osobaId || wybranyTermin?.pracownik_id || null,
     });
     setWysylam(false);
     if (error) {
@@ -95,8 +117,10 @@ export default function Zapisy() {
       </Ekran>
     );
 
+  const nr = (krok: number) => (wyborOsoby || krok < 2 ? krok : krok - 1);
+
   return (
-    <Ekran>
+    <Ekran kolor={info.data.kolor}>
       <header className="text-center">
         <p className="text-[12px] font-bold tracking-[0.2em] text-zloto uppercase">Zapisy online</p>
         <h1 className="mt-1 font-serif text-[34px] leading-tight font-semibold">{info.data.salon}</h1>
@@ -110,6 +134,7 @@ export default function Zapisy() {
               key={u.id}
               onClick={() => {
                 setUslugaId(u.id);
+                setOsobaId("");
                 setStart("");
               }}
               aria-pressed={uslugaId === u.id}
@@ -127,8 +152,30 @@ export default function Zapisy() {
         </div>
       </Krok>
 
+      {usluga && wyborOsoby && (
+        <Krok nr={2} tytul="Do kogo?">
+          <div className="flex flex-wrap gap-2">
+            {[{ id: "", imie: "Ktokolwiek", kolor: "" }, ...osoby].map((p) => (
+              <button
+                key={p.id || "ktokolwiek"}
+                onClick={() => {
+                  setOsobaId(p.id);
+                  setStart("");
+                }}
+                aria-pressed={osobaId === p.id}
+                className={`inline-flex items-center gap-2 rounded-full border px-4 py-2.5 font-semibold ${osobaId === p.id ? "border-atrament bg-atrament text-krem" : "border-linia bg-papier hover:border-mokka"}`}
+              >
+                {p.kolor && <span className="size-2.5 rounded-full" style={{ background: p.kolor }} />}
+                {p.imie}
+              </button>
+            ))}
+          </div>
+          {!osobaId && <p className="mt-2 text-[13px] text-szary">Pokażemy najwięcej wolnych terminów u wszystkich osób.</p>}
+        </Krok>
+      )}
+
       {usluga && (
-        <Krok nr={2} tytul="Wybierz dzień">
+        <Krok nr={nr(3)} tytul="Wybierz dzień">
           <div className="-mx-5 flex snap-x gap-2 overflow-x-auto px-5 pb-2">
             {dni.map((d) => (
               <button
@@ -150,7 +197,7 @@ export default function Zapisy() {
       )}
 
       {usluga && dzien && (
-        <Krok nr={3} tytul={`Wolne godziny · ${opisDnia(dzien)}`}>
+        <Krok nr={nr(4)} tytul={`Wolne godziny · ${opisDnia(dzien)}`}>
           {wolne.isLoading ? (
             <Ladowanie />
           ) : !wolne.data?.length ? (
@@ -159,12 +206,12 @@ export default function Zapisy() {
             <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
               {wolne.data.map((t) => (
                 <button
-                  key={t}
-                  onClick={() => setStart(t)}
-                  aria-pressed={start === t}
-                  className={`rounded-xl border py-2.5 font-semibold ${start === t ? "border-atrament bg-atrament text-krem" : "border-linia bg-papier hover:border-mokka"}`}
+                  key={t.start}
+                  onClick={() => setStart(t.start)}
+                  aria-pressed={start === t.start}
+                  className={`rounded-xl border py-2.5 font-semibold ${start === t.start ? "border-atrament bg-atrament text-krem" : "border-linia bg-papier hover:border-mokka"}`}
                 >
-                  {godzina(t)}
+                  {godzina(t.start)}
                 </button>
               ))}
             </div>
@@ -176,10 +223,11 @@ export default function Zapisy() {
 
       {start && usluga && (
         <div ref={dalej} className="scroll-mt-4">
-          <Krok nr={4} tytul="Twoje dane">
+          <Krok nr={nr(5)} tytul="Twoje dane">
             <form onSubmit={zarezerwuj} className="space-y-3">
               <p className="rounded-2xl bg-piasek/60 px-4 py-3 text-[15px]">
                 <b>{usluga.nazwa}</b> · {opisDnia(dzien)}, {godzina(start)}
+                {wyborOsoby && wybranyTermin && <> · u {imieOsoby(wybranyTermin.pracownik_id)}</>}
               </p>
               <input aria-label="Imię i nazwisko" required minLength={2} maxLength={80} autoComplete="name" className="pole" placeholder="Imię i nazwisko" value={imie} onChange={(e) => setImie(e.target.value)} />
               <input aria-label="Telefon" required type="tel" inputMode="tel" autoComplete="tel" className="pole" placeholder="Telefon" value={telefon} onChange={(e) => setTelefon(e.target.value)} />
@@ -195,10 +243,6 @@ export default function Zapisy() {
       )}
     </Ekran>
   );
-}
-
-function Ekran({ children }: { children: React.ReactNode }) {
-  return <div className="mx-auto min-h-dvh max-w-md space-y-7 px-5 py-10">{children}</div>;
 }
 
 function Krok({ nr, tytul, children }: { nr: number; tytul: string; children: React.ReactNode }) {

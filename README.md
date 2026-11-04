@@ -1,12 +1,11 @@
-# BloomBooksy – terminarz Bloom Beauty
+# Bloomly – kalendarz i zapisy online dla salonów beauty
 
 **Aplikacja:** https://bloombooksy.github.io/
 
-Aplikacja, która zastępuje papierowy kalendarz w salonie paznokci [Bloom Beauty](https://bloombeauty.com.pl) w Oświęcimiu.
-Właścicielka zapisuje w niej wizyty i odhacza klientki. Kwotę z wizyty wpisuje dwoma tapnięciami i od razu widzi utarg dnia.
-Znajome klientki zapisują się same przez tajny link, a dzień przed wizytą dostają SMS z przypomnieniem.
+Bloomly zastępuje papierowy kalendarz i Messengera w salonach beauty. Stylistka zapisuje w nim wizyty i odhacza klientki, a kwotę z wizyty wpisuje dwoma tapnięciami i od razu widzi utarg dnia.
+Klientki zapisują się same przez link salonu i dostają SMS z przypomnieniem. Jedna aplikacja obsługuje wiele salonów: każdy ma swoje dane, swój zespół, kolor i adres zapisów.
 
-> Projekt zbudowany dla prawdziwego salonu, który wcześniej korzystał z papierowego terminarza. Celem było **jak najbardziej skrócić i uprościć** codzienną pracę właścicielki.
+> Zaczęło się od salonu paznokci [Bloom Beauty](https://bloombeauty.com.pl) w Oświęcimiu, który prowadził wizyty w papierowym terminarzu. Celem było **jak najbardziej skrócić i uprościć** codzienną pracę właścicielki; z tego powstał produkt dla innych salonów.
 
 | Dziś | Po klientce | Zapisy przez link | Moja wizyta |
 | --- | --- | --- | --- |
@@ -33,6 +32,10 @@ Znajome klientki zapisują się same przez tajny link, a dzień przed wizytą do
 - **Wiadomości jednym tapnięciem**: z karty klientki właścicielka wysyła link do zapisów z wpisanym już imieniem i numerem, a po dodaniu lub potwierdzeniu wizyty SMS z terminem. Otwiera się aplikacja SMS w jej telefonie z gotową treścią, więc nic to nie kosztuje.
 - **Przypomnienia SMS** dzień przed wizytą o wybranej godzinie, z własnym szablonem treści i podglądem liczby znaków.
 - **Podsumowanie** tygodnia i miesiąca: utarg dzień po dniu, średnia na klientkę, odsetek nieobecności, najlepsze usługi.
+- **Zespół**: każda osoba ma swój kalendarz, godziny i usługi; dwie stylistki mogą przyjmować o tej samej godzinie. Pracownik loguje się własnym kontem (zaproszenie na e-mail) i nie widzi utargu całego salonu ani ustawień.
+- **Samodzielne założenie salonu**: kreator z wyborem branży (paznokcie, rzęsy i brwi, fryzjer, barber, kosmetyka, masaż) daje gotowy cennik startowy; salon wybiera kolor i publiczny adres zapisów.
+- **Import klientek z CSV** (eksport z Booksy, kontakty Google, Excel) z pomijaniem duplikatów.
+- **Strona sprzedażowa** z kalkulatorem kosztów względem Booksy i salonem demo odświeżanym co noc.
 - **PWA**: aplikację można dodać do ekranu głównego telefonu i działa jak natywna.
 
 ## Technologie

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { CalendarPlus, Plus } from "lucide-react";
-import { useWizyty, type WizytaZKlientka } from "../lib/dane";
+import { useCzyWlascicielka, useJa, useWizyty, useZespol, type WizytaZKlientka } from "../lib/dane";
 import { dodajDni, dzienKey } from "../lib/czas";
 import { podsumuj, zl } from "../lib/pieniadze";
 import { Kafelek, Ladowanie, Pusto } from "../components/ui";
@@ -10,18 +10,35 @@ import { WizytaKarta } from "../components/WizytaKarta";
 import { WizytaForm } from "../components/WizytaForm";
 import { ZakonczForm } from "../components/ZakonczForm";
 import { Oczekujace } from "../components/Oczekujace";
+import { WyborOsoby, useWybranaOsoba } from "../components/WyborOsoby";
 
 /** Ekran „Dziś”: lista klientek, odhaczanie z kwotą, licznik i utarg dnia. */
 export function Dzis() {
   const [params, setParams] = useSearchParams();
   const dzis = dzienKey();
   const dzien = params.get("d") ?? dzis;
-  const ustaw = (k: string) => setParams(k === dzis ? {} : { d: k }, { replace: true });
-  const { data: wizyty = [], isLoading } = useWizyty(dzien, dzien);
+  const ustaw = (k: string) =>
+    setParams(
+      (p) => {
+        const n = new URLSearchParams(p);
+        if (k === dzis) n.delete("d");
+        else n.set("d", k);
+        return n;
+      },
+      { replace: true },
+    );
+  const [osoba, setOsoba] = useWybranaOsoba();
+  const { aktywni, wiele } = useZespol();
+  const osoby = new Map(aktywni.map((p) => [p.id, p]));
+  const { data: wizytyDnia = [], isLoading } = useWizyty(dzien, dzien);
+  const wizyty = osoba ? wizytyDnia.filter((w) => w.pracownik_id === osoba) : wizytyDnia;
   const [edycja, setEdycja] = useState<WizytaZKlientka | "nowa" | null>(null);
   const [koniec, setKoniec] = useState<WizytaZKlientka | null>(null);
 
-  const p = podsumuj(wizyty);
+  const wlascicielka = useCzyWlascicielka();
+  const ja = useJa();
+  // osoba z zespołu widzi w kafelkach tylko swój utarg
+  const p = podsumuj(wlascicielka ? wizyty : wizyty.filter((w) => w.pracownik_id === ja));
   const aktywne = wizyty.filter((w) => w.status !== "odwolana");
   const wszystkie = p.zrobione + p.zaplanowane;
   const { tytul, podtytul } = tytulDnia(dzien);
@@ -49,6 +66,8 @@ export function Dzis() {
         </div>
       </div>
 
+      <WyborOsoby wartosc={osoba} onZmien={setOsoba} />
+
       {dzien === dzis && <Oczekujace />}
 
       {isLoading ? (
@@ -63,7 +82,7 @@ export function Dzis() {
       ) : (
         <div className="space-y-2.5">
           {wizyty.map((w) => (
-            <WizytaKarta key={w.id} w={w} onOtworz={() => setEdycja(w)} onZakoncz={() => setKoniec(w)} />
+            <WizytaKarta key={w.id} w={w} osoba={!osoba && wiele ? osoby.get(w.pracownik_id) : undefined} onOtworz={() => setEdycja(w)} onZakoncz={() => setKoniec(w)} />
           ))}
         </div>
       )}
@@ -76,7 +95,7 @@ export function Dzis() {
         <Plus className="size-7" />
       </button>
 
-      {edycja && <WizytaForm wizyta={edycja === "nowa" ? undefined : edycja} dzien={dzien} onClose={() => setEdycja(null)} />}
+      {edycja && <WizytaForm wizyta={edycja === "nowa" ? undefined : edycja} dzien={dzien} pracownik={osoba || undefined} onClose={() => setEdycja(null)} />}
       {koniec && <ZakonczForm wizyta={koniec} onClose={() => setKoniec(null)} />}
     </div>
   );

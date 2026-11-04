@@ -18,7 +18,29 @@ type Salon = {
   zapisy_wyprzedzenie_h: number;
   adres: string;
   telefon: string;
+  branza: Branza;
+  kolor: string;
+  slug: string | null;
 };
+
+export type Branza = "paznokcie" | "rzesy_brwi" | "fryzjer" | "barber" | "kosmetyka" | "masaz" | "inne";
+export type Rola = "wlascicielka" | "pracownik";
+
+type Pracownik = {
+  id: string;
+  salon_id: string;
+  imie: string;
+  kolor: string;
+  aktywny: boolean;
+  w_zapisach: boolean;
+  kolejnosc: number;
+  user_id: string | null;
+  email: string | null;
+  rola: Rola;
+  created_at: string;
+};
+type UslugaPracownik = { usluga_id: string; pracownik_id: string };
+type GodzinyPracownika = { pracownik_id: string; dzien: number; od_godz: string; do_godz: string };
 
 type Rel = {
   foreignKeyName: string;
@@ -54,6 +76,7 @@ type Wizyta = {
   zrodlo: ZrodloWizyty;
   kod: string;
   odwolala_klientka: boolean;
+  pracownik_id: string;
 };
 
 type Klientka = {
@@ -81,7 +104,7 @@ type Usluga = {
 };
 
 type GodzinyPracy = { do_godz: string; dzien: number; od_godz: string; salon_id: string };
-type Przerwa = { id: string; koniec: string; opis: string; salon_id: string; start: string };
+type Przerwa = { id: string; koniec: string; opis: string; salon_id: string; start: string; pracownik_id: string | null };
 
 type T<Row, Req extends keyof Row> = {
   Row: Row;
@@ -100,6 +123,9 @@ export type Database = {
       godziny_pracy: T<GodzinyPracy, "dzien" | "od_godz" | "do_godz" | "salon_id">;
       przerwy: T<Przerwa, "start" | "koniec" | "salon_id">;
       wizyty: T<Wizyta, "start" | "koniec" | "salon_id">;
+      pracownicy: T<Pracownik, "imie" | "salon_id">;
+      uslugi_pracownicy: T<UslugaPracownik, "usluga_id" | "pracownik_id">;
+      godziny_pracownikow: T<GodzinyPracownika, "pracownik_id" | "dzien" | "od_godz" | "do_godz">;
     };
     Views: { [_ in never]: never };
     Functions: {
@@ -112,6 +138,16 @@ export type Database = {
         Returns: Json;
       };
       wizyta_info: { Args: { p_kod: string }; Returns: Json };
+      moj_kontekst: { Args: never; Returns: Json };
+      zaloz_salon: { Args: { p_nazwa: string; p_branza: string; p_kolor: string; p_imie: string }; Returns: Json };
+      zapisy_wolne_v2: {
+        Args: { p_token: string; p_usluga: string; p_dzien: string; p_pracownik?: string | null };
+        Returns: { start: string; pracownik_id: string }[];
+      };
+      zapisy_rezerwuj_v2: {
+        Args: { p_token: string; p_usluga: string; p_start: string; p_imie: string; p_telefon: string; p_notatka?: string; p_pracownik?: string | null };
+        Returns: Json;
+      };
       wizyta_odwolaj: { Args: { p_kod: string }; Returns: Json };
     };
     Enums: {
@@ -130,3 +166,6 @@ export type KlientkaRow = Klientka;
 export type UslugaRow = Usluga;
 export type GodzinyRow = GodzinyPracy;
 export type PrzerwaRow = Przerwa;
+export type PracownikRow = Pracownik;
+export type UslugaPracownikRow = UslugaPracownik;
+export type GodzinyPracownikaRow = GodzinyPracownika;

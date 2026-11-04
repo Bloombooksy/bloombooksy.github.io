@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Trash2, UserPlus } from "lucide-react";
 import { Blad, Modal } from "./ui";
-import { useKlientki, useSalon, useSalonId, useUslugi, useZapis, type WizytaZKlientka } from "../lib/dane";
+import { useJa, useKlientki, useSalon, useSalonId, useUslugi, useZapis, useZespol, type WizytaZKlientka } from "../lib/dane";
 import { linkWizyty, smsHref, trescWizyty } from "../lib/wiadomosci";
 import { WyslijSms } from "./WyslijSms";
 import { dzienKey, godzina, opisCzasu, wStrefie } from "../lib/czas";
@@ -17,14 +17,19 @@ export function WizytaForm({
   wizyta,
   dzien,
   start,
+  pracownik,
   onClose,
 }: {
   wizyta?: WizytaZKlientka;
   dzien?: string;
   start?: string;
+  pracownik?: string;
   onClose: () => void;
 }) {
   const salonId = useSalonId();
+  const ja = useJa();
+  const { aktywni, wiele } = useZespol();
+  const [osoba, setOsoba] = useState(wizyta?.pracownik_id ?? pracownik ?? ja);
   const { data: uslugi = [] } = useUslugi();
   const { data: klientki = [] } = useKlientki();
   const wizytyApi = useZapis("wizyty", ["wizyty"]);
@@ -84,6 +89,7 @@ export function WizytaForm({
         kId = k.id;
       }
       const wiersz = {
+        pracownik_id: osoba || ja,
         klientka_id: kId,
         usluga_id: usluga?.id ?? null,
         usluga_nazwa: usluga?.nazwa ?? wizyta?.usluga_nazwa ?? "",
@@ -230,6 +236,28 @@ export function WizytaForm({
             </div>
           )}
         </div>
+
+        {wiele && (
+          <div>
+            <span className="etykieta">Kto przyjmuje</span>
+            <div className="flex flex-wrap gap-2">
+              {aktywni.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    aria-pressed={osoba === p.id}
+                    onClick={() => setOsoba(p.id)}
+                    className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-2 text-[14px] font-semibold ${
+                      osoba === p.id ? "border-atrament bg-atrament text-krem" : "border-linia bg-papier"
+                    }`}
+                  >
+                    <span className="size-2.5 rounded-full" style={{ background: p.kolor }} />
+                    {p.imie}
+                  </button>
+                ))}
+            </div>
+          </div>
+        )}
 
         <div>
           <label className="etykieta" htmlFor="us">

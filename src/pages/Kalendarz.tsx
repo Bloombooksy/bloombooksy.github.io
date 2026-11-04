@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Plus } from "lucide-react";
-import { useGodziny, usePrzerwy, useUslugi, useWizyty, type WizytaZKlientka } from "../lib/dane";
+import { useGodziny, usePrzerwy, useUslugi, useWizyty, useZespol, type WizytaZKlientka } from "../lib/dane";
+import { WyborOsoby, useWybranaOsoba } from "../components/WyborOsoby";
 import { DNI_KROTKO, dodajDni, dzienKey, dzienTygodnia, godzina, godzinaNaMinuty, krotkaData, minutyDnia, minutyNaGodzine, opisDnia, tydzien } from "../lib/czas";
 import { PasekDnia } from "../components/PasekDnia";
 import { WizytaForm } from "../components/WizytaForm";
@@ -20,11 +21,17 @@ export default function Kalendarz() {
   const dni = tydzien(baza);
   const od = dni[0]!;
   const doDnia = dni[6]!;
-  const { data: wizyty = [] } = useWizyty(od, doDnia);
+  const { data: wszystkieWizyty = [] } = useWizyty(od, doDnia);
+  const [osoba, setOsoba] = useWybranaOsoba();
+  const { aktywni, wiele } = useZespol();
+  const wizyty = osoba ? wszystkieWizyty.filter((w) => w.pracownik_id === osoba) : wszystkieWizyty;
+  // „Wszyscy” w zespole: każda osoba ma swój pasek w kolumnie dnia
+  const pasy = !osoba && wiele ? aktywni : [];
+  const kolorOsoby = new Map(aktywni.map((p) => [p.id, p.kolor]));
   const { data: godziny = [] } = useGodziny();
   const { data: przerwy = [] } = usePrzerwy(od, doDnia);
   const { data: uslugi = [] } = useUslugi();
-  const [edycja, setEdycja] = useState<{ w?: WizytaZKlientka; dzien?: string; start?: string } | null>(null);
+  const [edycja, setEdycja] = useState<{ w?: WizytaZKlientka; dzien?: string; start?: string; pracownik?: string | undefined } | null>(null);
 
   const siatka = useRef<HTMLDivElement>(null);
   // na telefonie tydzień się przewija – zaczynamy od dzisiejszej kolumny
@@ -53,13 +60,24 @@ export default function Kalendarz() {
   const godzinyOsi = Array.from({ length: (minKoniec - minStart) / 60 }, (_, i) => minStart + i * 60);
   const tydzienSuma = podsumuj(wizyty);
 
-  const ustaw = (k: string) => setParams(k === dzis ? {} : { d: k }, { replace: true });
+  const ustaw = (k: string) =>
+    setParams(
+      (p) => {
+        const n = new URLSearchParams(p);
+        if (k === dzis) n.delete("d");
+        else n.set("d", k);
+        return n;
+      },
+      { replace: true },
+    );
 
   function klik(dzien: string, e: React.MouseEvent<HTMLDivElement>) {
     if (e.target !== e.currentTarget) return;
     const y = e.nativeEvent.offsetY;
     const m = Math.floor((minStart + y / PX_NA_MIN) / KROK) * KROK;
-    setEdycja({ dzien, start: minutyNaGodzine(Math.min(m, 23 * 60 + 45)) });
+    // w widoku „Wszyscy” stuknięcie w pasek osoby dodaje wizytę tej osobie
+    const pas = pasy.length ? pasy[Math.min(pasy.length - 1, Math.floor((e.nativeEvent.offsetX / e.currentTarget.clientWidth) * pasy.length))] : undefined;
+    setEdycja({ dzien, start: minutyNaGodzine(Math.min(m, 23 * 60 + 45)), pracownik: osoba || pas?.id });
   }
 
   return (
@@ -72,6 +90,7 @@ export default function Kalendarz() {
         onNast={() => ustaw(dodajDni(baza, 7))}
         onDzis={() => ustaw(dzis)}
       />
+      <WyborOsoby wartosc={osoba} onZmien={setOsoba} />
       <Oczekujace />
 
       <div ref={siatka} className="karta overflow-x-auto">
@@ -108,7 +127,9 @@ export default function Kalendarz() {
             const g = godziny.find((x) => x.dzien === dzienTygodnia(d));
             const pracy = g ? [godzinaNaMinuty(g.od_godz), godzinaNaMinuty(g.do_godz)] : null;
             const tegoDnia = wizyty.filter((w) => dzienKey(w.start) === d);
-            const przerwyDnia = przerwy.filter((p) => dzienKey(p.start) <= d && dzienKey(p.koniec) >= d);
+            const przerwyDnia = przerwy.filter(
+              (p) => dzienKey(p.start) <= d && dzienKey(p.koniec) >= d && (!osoba || !p.pracownik_id || p.pracownik_id === osoba),
+            );
             return (
               <div
                 key={d}
@@ -147,6 +168,11 @@ export default function Kalendarz() {
                   const b = dzienKey(w.koniec) === d ? minutyDnia(w.koniec) : 24 * 60;
                   const c = (w.usluga_id && kolor.get(w.usluga_id)) || "#b98a4e";
                   const wyg = w.status === "odwolana" || w.status === "nieobecnosc";
+                  const pas = pasy.length ? Math.max(0, pasy.findIndex((p) => p.id === w.pracownik_id)) : -1;
+                  const poziomo =
+                    pas >= 0
+                      ? { left: `calc(${(pas / pasy.length) * 100}% + 2px)`, width: `calc(${100 / pasy.length}% - 4px)`, right: "auto" }
+                      : {};
                   return (
                     <button
                       key={w.id}
@@ -157,8 +183,9 @@ export default function Kalendarz() {
                       style={{
                         top: (a - minStart) * PX_NA_MIN + 1,
                         height: Math.max(22, (b - a) * PX_NA_MIN - 2),
-                        borderLeftColor: c,
+                        borderLeftColor: pas >= 0 ? (kolorOsoby.get(w.pracownik_id) ?? c) : c,
                         background: w.status === "oczekuje" ? undefined : `color-mix(in srgb, ${c} 16%, #fffdfa)`,
+                        ...poziomo,
                       }}
                     >
                       <span className="font-bold">{godzina(w.start)}</span> {w.klientka?.imie}
@@ -180,7 +207,7 @@ export default function Kalendarz() {
       >
         <Plus className="size-7" />
       </button>
-      {edycja && <WizytaForm wizyta={edycja.w} dzien={edycja.dzien} start={edycja.start} onClose={() => setEdycja(null)} />}
+      {edycja && <WizytaForm wizyta={edycja.w} dzien={edycja.dzien} start={edycja.start} pracownik={edycja.pracownik} onClose={() => setEdycja(null)} />}
     </div>
   );
 }
