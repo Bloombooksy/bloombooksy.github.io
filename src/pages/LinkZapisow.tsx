@@ -8,6 +8,7 @@ import { Wstecz } from "../components/Wstecz";
 import type { SalonRow } from "../lib/database.types";
 import { linkZapisow } from "../lib/wiadomosci";
 import { KOLORY_SALONU, poprawnySlug, slugify } from "../lib/branze";
+import { parsujKwote } from "../lib/pieniadze";
 
 export default function LinkZapisow() {
   const { data: s } = useSalon();
@@ -17,6 +18,9 @@ export default function LinkZapisow() {
   const [slug, setSlug] = useState("");
   const [adres, setAdres] = useState("");
   const [tel, setTel] = useState("");
+  const [kwota, setKwota] = useState("");
+  const [instrukcja, setInstrukcja] = useState("");
+  const [opinie, setOpinie] = useState("");
   const [skopiowano, setSkopiowano] = useState(false);
   const [blad, setBlad] = useState("");
   useEffect(() => {
@@ -24,6 +28,9 @@ export default function LinkZapisow() {
     setSlug(s?.slug ?? slugify(s?.nazwa ?? ""));
     setAdres(s?.adres ?? "");
     setTel(s?.telefon ?? "");
+    setKwota(s?.zadatek_kwota ? String(s.zadatek_kwota) : "");
+    setInstrukcja(s?.zadatek_instrukcja ?? "");
+    setOpinie(s?.link_opinii ?? "");
   }, [s?.nazwa, s?.adres, s?.telefon, s?.slug]);
   if (!s) return null;
   const link = linkZapisow(s.slug ?? s.zapisy_token);
@@ -163,6 +170,72 @@ export default function LinkZapisow() {
           <Wybor etykieta="Godziny co" wartosc={s.krok_min} onZmien={(v) => ustaw({ krok_min: v })} opcje={[[15, "15 min"], [30, "30 min"], [60, "godzinę"]]} />
         </div>
       </div>
+      <div className="karta space-y-4 p-4">
+        <div>
+          <h2 className="font-bold">Zadatek</h2>
+          <p className="mt-1 text-[14px] text-szary">
+            Klientka zapisująca się przez link widzi kwotę i instrukcję wpłaty (np. BLIK na Twój telefon). Pieniądze trafiają prosto do Ciebie – w
+            aplikacji tylko zaznaczasz „Wpłynął”.
+          </p>
+        </div>
+        <label className="block">
+          <span className="etykieta">Kto wpłaca zadatek</span>
+          <select className="pole" value={s.zadatek_tryb} onChange={(e) => ustaw({ zadatek_tryb: e.target.value as SalonRow["zadatek_tryb"] })}>
+            <option value="wybrane">Tylko wybrane klientki (włączasz w karcie)</option>
+            <option value="nowe">Nowe klientki</option>
+            <option value="wszyscy">Wszystkie zapisy online</option>
+          </select>
+        </label>
+        <div className="grid gap-3 sm:grid-cols-[10rem_1fr]">
+          <label className="block">
+            <span className="etykieta">Kwota (zł)</span>
+            <input
+              inputMode="decimal"
+              className="pole"
+              placeholder="np. 50"
+              value={kwota}
+              onChange={(e) => setKwota(e.target.value)}
+              onBlur={() => {
+                const n = parsujKwote(kwota) ?? 0;
+                if (n !== Number(s.zadatek_kwota)) ustaw({ zadatek_kwota: n });
+              }}
+            />
+          </label>
+          <label className="block">
+            <span className="etykieta">Jak wpłacić</span>
+            <input
+              className="pole"
+              maxLength={300}
+              placeholder="np. BLIK na numer 690 017 099, w tytule imię i data wizyty"
+              value={instrukcja}
+              onChange={(e) => setInstrukcja(e.target.value)}
+              onBlur={() => instrukcja !== s.zadatek_instrukcja && ustaw({ zadatek_instrukcja: instrukcja.trim() })}
+            />
+          </label>
+        </div>
+        {Number(s.zadatek_kwota) > 0 && !s.zadatek_instrukcja && <p className="text-[13px] font-semibold text-bursztyn">Wpisz, jak wpłacić – inaczej klientka nie będzie wiedziała, gdzie przelać.</p>}
+      </div>
+
+      <div className="karta space-y-3 p-4">
+        <h2 className="font-bold">Opinie w Google</h2>
+        <p className="text-[14px] text-szary">
+          Po zapisaniu wizyty aplikacja zaproponuje SMS z prośbą o opinię. Link znajdziesz w swoim profilu firmy w Google: „Poproś o opinie” → skopiuj link.
+        </p>
+        <input
+          className="pole"
+          type="url"
+          placeholder="https://g.page/r/…/review"
+          value={opinie}
+          onChange={(e) => setOpinie(e.target.value)}
+          onBlur={() => {
+            const v = opinie.trim();
+            if (v === s.link_opinii) return;
+            if (v && !v.startsWith("https://")) return setBlad("Link do opinii musi zaczynać się od https://");
+            ustaw({ link_opinii: v });
+          }}
+        />
+      </div>
+
       <Blad>{blad}</Blad>
     </div>
   );

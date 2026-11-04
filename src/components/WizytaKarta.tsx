@@ -60,6 +60,11 @@ export function WizytaKarta({
             ) : (
               Number(w.cena) > 0 && <span>{zl(Number(w.cena))}</span>
             )}
+            {w.zadatek != null && (
+              <span className={`font-semibold ${w.zadatek_wplacony ? "text-ziel" : "text-bursztyn"}`}>
+                zadatek {zl(Number(w.zadatek))} {w.zadatek_wplacony ? "✓" : "– czeka"}
+              </span>
+            )}
             {SMS_TXT[w.sms_status] && (
               <span className="inline-flex items-center gap-1">
                 <MessageSquareText className="size-3.5" /> {SMS_TXT[w.sms_status]}

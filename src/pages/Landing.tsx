@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { BellRing, CalendarPlus, Check, FileUp, Link2, Smartphone, Users, Wallet } from "lucide-react";
+import { BellRing, CalendarPlus, Check, FileUp, Link2, Repeat, ShieldCheck, Smartphone, Users, Wallet } from "lucide-react";
 import { BOOKSY, DEMO, OFERTA, kosztBloomly, kosztBooksy } from "../lib/oferta";
 import { CSS, NaglowekMarketing, PrzyciskDemo, StopkaMarketing } from "../components/Marketing";
 
@@ -120,6 +120,8 @@ const FUNKCJE = [
   { ikona: BellRing, tytul: "Przypomnienia SMS", opis: `Dzień przed wizytą klientka dostaje SMS z godziną. ${OFERTA.smsWCenie} SMS-ów miesięcznie w cenie.` },
   { ikona: CalendarPlus, tytul: "Wizyta w kalendarzu klientki", opis: "Po zapisie klientka jednym tapnięciem dodaje wizytę do kalendarza Google lub iPhone’a. Może też sama ją odwołać." },
   { ikona: Users, tytul: "Cały zespół w jednym miejscu", opis: "Każda osoba ma swój grafik i usługi. Dwie stylistki przyjmują o tej samej godzinie, a klientka wybiera, do kogo idzie." },
+  { ikona: ShieldCheck, tytul: "Zadatek i koniec z „nie przyszła”", opis: "Nowe albo wybrane klientki wpłacają zadatek BLIK-iem prosto na Twój telefon. Klientkę, która znika bez słowa, blokujesz w zapisach online." },
+  { ikona: Repeat, tytul: "Kolejna wizyta jednym tapnięciem", opis: "Po wizycie Bloomly proponuje termin za 2, 3, 4 lub 6 tygodni i SMS z prośbą o opinię w Google." },
   { ikona: FileUp, tytul: "Przeprowadzka w jeden wieczór", opis: "Klientki przenosisz z Booksy, telefonu albo Excela plikiem CSV. Papierowy kalendarz możemy przepisać za Ciebie." },
 ];
 
@@ -231,6 +233,7 @@ function Cennik() {
     "Kalendarz i ekran dnia z utargiem",
     "Zapisy online przez Twój link",
     `${OFERTA.smsWCenie} przypomnień SMS miesięcznie`,
+    "Zadatki i blokowanie klientek, które nie przychodzą",
     "Strona wizyty dla klientki z dodaniem do kalendarza",
     "Import klientek i podsumowania miesiąca",
     "Pomoc na czacie i telefonicznie",

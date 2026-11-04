@@ -40,3 +40,8 @@ export function trescWizyty(w: { imie: string; start: string; usluga: string; sa
     `${w.usluga ? ` – ${w.usluga}` : ""}. Szczegóły i dodanie do kalendarza: ${w.link} ${w.salon}`
   );
 }
+
+export function trescProsbyOOpinie(imie: string, salon: string, link: string): string {
+  const i = pierwsze(imie);
+  return `${i ? `Dziękuję za wizytę, ${i}!` : "Dziękuję za wizytę!"} Będzie mi bardzo miło, jeśli zostawisz krótką opinię – to bardzo pomaga ${salon}: ${link}`;
+}

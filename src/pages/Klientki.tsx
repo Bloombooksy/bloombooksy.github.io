@@ -51,7 +51,11 @@ export default function Klientki() {
               <button onClick={() => setOtwarta(k)} className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-piasek/30">
                 <span className="grid size-10 shrink-0 place-items-center rounded-full bg-piasek font-serif text-lg font-semibold text-mokka">{k.imie.charAt(0).toUpperCase()}</span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-bold">{k.imie}</span>
+                  <span className="flex items-center gap-2">
+                    <span className="truncate font-bold">{k.imie}</span>
+                    {k.zablokowana && <span className="shrink-0 rounded-full bg-roz-jasny px-2 py-0.5 text-[11px] font-bold text-[#8a2f3a]">zablokowana</span>}
+                    {!k.zablokowana && k.wymaga_zadatku && <span className="shrink-0 rounded-full bg-bursztyn-jasny px-2 py-0.5 text-[11px] font-bold text-bursztyn">zadatek</span>}
+                  </span>
                   <span className="block truncate text-[13px] text-szary">{[k.telefon && ladnyTelefon(k.telefon), k.instagram && `@${k.instagram.replace(/^@/, "")}`].filter(Boolean).join(" · ") || "brak kontaktu"}</span>
                 </span>
               </button>
@@ -76,6 +80,8 @@ function KlientkaModal({ k, onClose }: { k: KlientkaRow | null; onClose: () => v
     instagram: k?.instagram ?? "",
     notatka: k?.notatka ?? "",
     zgoda_sms: k?.zgoda_sms ?? true,
+    wymaga_zadatku: k?.wymaga_zadatku ?? false,
+    zablokowana: k?.zablokowana ?? false,
   });
   const [blad, setBlad] = useState("");
   const p = podsumuj(historia);
@@ -167,6 +173,23 @@ function KlientkaModal({ k, onClose }: { k: KlientkaRow | null; onClose: () => v
           <textarea id="k-n" rows={2} className="pole resize-none" placeholder="np. ulubiony kolor, alergie, kształt" value={f.notatka} onChange={(e) => setF({ ...f, notatka: e.target.value })} />
         </div>
         <Przelacznik wl={f.zgoda_sms} onZmien={(v) => setF({ ...f, zgoda_sms: v })} etykieta="Przypomnienia SMS" opis="SMS dzień przed wizytą" />
+        {k && p.nieobecne >= 2 && !f.zablokowana && !f.wymaga_zadatku && (
+          <p className="rounded-xl bg-roz-jasny px-3.5 py-2.5 text-[14px] text-[#8a2f3a]">
+            Nie przyszła już {p.nieobecne} razy. Możesz wymagać od niej zadatku albo zablokować jej zapisy online.
+          </p>
+        )}
+        <Przelacznik
+          wl={f.wymaga_zadatku}
+          onZmien={(v) => setF({ ...f, wymaga_zadatku: v })}
+          etykieta="Zadatek przy zapisie online"
+          opis="Zapisując się przez link, zobaczy kwotę i jak ją wpłacić (ustawiasz w Zapisach online)"
+        />
+        <Przelacznik
+          wl={f.zablokowana}
+          onZmien={(v) => setF({ ...f, zablokowana: v })}
+          etykieta="Zablokuj zapisy online"
+          opis="Strona zapisów poprosi ją o telefon do salonu. Ty nadal możesz wpisać jej wizytę."
+        />
         <Blad>{blad}</Blad>
 
         {k && historia.length > 0 && (

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Blad, Modal } from "./ui";
+import { PoWizycie } from "./PoWizycie";
 import { useZapis, type WizytaZKlientka } from "../lib/dane";
 import { godzina } from "../lib/czas";
 import { komunikat } from "../lib/supabase";
@@ -15,6 +16,7 @@ export function ZakonczForm({ wizyta, onClose }: { wizyta: WizytaZKlientka; onCl
   const [napiwek, setNapiwek] = useState(wizyta.napiwek ? String(wizyta.napiwek) : "");
   const [platnosc, setPlatnosc] = useState<Platnosc>(wizyta.platnosc ?? "gotowka");
   const [blad, setBlad] = useState("");
+  const [po, setPo] = useState(false);
 
   const k = parsujKwote(kwota);
   const n = parsujKwote(napiwek) ?? 0;
@@ -24,7 +26,9 @@ export function ZakonczForm({ wizyta, onClose }: { wizyta: WizytaZKlientka; onCl
     if (k === null) return setBlad("Wpisz kwotę.");
     try {
       await api.zmien.mutateAsync({ id: wizyta.id, status: "zrealizowana", kwota: k, napiwek: n, platnosc });
-      onClose();
+      // pierwsze zapisanie wizyty → propozycja kolejnej i prośba o opinię
+      if (wizyta.status !== "zrealizowana") setPo(true);
+      else onClose();
     } catch (err) {
       setBlad(komunikat(err));
     }
@@ -38,6 +42,8 @@ export function ZakonczForm({ wizyta, onClose }: { wizyta: WizytaZKlientka; onCl
       setBlad(komunikat(err));
     }
   }
+
+  if (po) return <PoWizycie wizyta={wizyta} suma={(k ?? 0) + n} onClose={onClose} />;
 
   return (
     <Modal
@@ -53,6 +59,13 @@ export function ZakonczForm({ wizyta, onClose }: { wizyta: WizytaZKlientka; onCl
         <p className="text-[14px] text-szary">
           {godzina(wizyta.start)} · {wizyta.usluga_nazwa || "wizyta"} · w cenniku {zl(Number(wizyta.cena))}
         </p>
+        {wizyta.zadatek != null && (
+          <p className={`rounded-xl px-3.5 py-2.5 text-[14px] ${wizyta.zadatek_wplacony ? "bg-ziel-jasny text-ziel" : "bg-bursztyn-jasny text-bursztyn"}`}>
+            {wizyta.zadatek_wplacony
+              ? `Zadatek ${zl(Number(wizyta.zadatek))} wpłacony – wpisz pełną kwotę wizyty, zadatek jest jej częścią.`
+              : `Zadatek ${zl(Number(wizyta.zadatek))} nie został oznaczony jako wpłacony.`}
+          </p>
+        )}
         <div>
           <label className="etykieta" htmlFor="kw">
             Zapłaciła (zł)

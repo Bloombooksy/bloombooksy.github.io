@@ -13,6 +13,7 @@ type Osoba = { id: string; imie: string; kolor: string };
 type Info = {
   salon: string;
   kolor?: string;
+  zadatek?: { kwota: number; tryb: "nowe" | "wszyscy" } | null;
   horyzont_dni: number;
   dni_pracy: number[];
   uslugi: { id: string; nazwa: string; czas_min: number; cena: number; pracownicy?: string[] }[];
@@ -232,6 +233,12 @@ export default function Zapisy() {
               <input aria-label="Imię i nazwisko" required minLength={2} maxLength={80} autoComplete="name" className="pole" placeholder="Imię i nazwisko" value={imie} onChange={(e) => setImie(e.target.value)} />
               <input aria-label="Telefon" required type="tel" inputMode="tel" autoComplete="tel" className="pole" placeholder="Telefon" value={telefon} onChange={(e) => setTelefon(e.target.value)} />
               <textarea aria-label="Wiadomość" rows={2} maxLength={500} className="pole resize-none" placeholder="Wiadomość (opcjonalnie) – np. kolor, zdobienia" value={notatka} onChange={(e) => setNotatka(e.target.value)} />
+              {info.data.zadatek && (
+                <p className="rounded-xl bg-bursztyn-jasny px-3.5 py-2.5 text-[14px] text-bursztyn">
+                  {info.data.zadatek.tryb === "wszyscy" ? "Do zapisu online potrzebny jest" : "Nowe klientki wpłacają"} zadatek{" "}
+                  <b>{info.data.zadatek.kwota} zł</b> – po zapisie zobaczysz, jak go wpłacić. Zadatek jest częścią ceny.
+                </p>
+              )}
               <p className="text-[13px] text-szary">Numer służy tylko do potwierdzenia wizyty i przypomnienia SMS dzień wcześniej.</p>
               <Blad>{blad}</Blad>
               <button disabled={wysylam} className="btn-glowny w-full">

@@ -14,6 +14,9 @@ type Info = {
   salon: string;
   kolor?: string;
   pracownik?: string | null;
+  zadatek?: number | null;
+  zadatek_wplacony?: boolean;
+  zadatek_instrukcja?: string | null;
   adres: string;
   telefon: string;
   usluga: string;
@@ -124,6 +127,20 @@ export default function MojaWizyta() {
           )}
         </div>
       </section>
+
+      {aktualna && w.zadatek != null && (
+        <section className={`rounded-2xl p-4 ${w.zadatek_wplacony ? "bg-ziel-jasny text-ziel" : "border border-bursztyn/30 bg-bursztyn-jasny text-bursztyn"}`}>
+          {w.zadatek_wplacony ? (
+            <p className="font-bold">Zadatek {w.zadatek} zł wpłacony ✓</p>
+          ) : (
+            <>
+              <p className="text-[17px] font-bold">Wpłać zadatek {w.zadatek} zł</p>
+              <p className="mt-1 text-[15px] text-atrament">{w.zadatek_instrukcja || "Salon poda Ci, jak go wpłacić."}</p>
+              <p className="mt-2 text-[13px]">Zadatek jest częścią ceny wizyty. Gdy salon go odnotuje, zobaczysz tu potwierdzenie.</p>
+            </>
+          )}
+        </section>
+      )}
 
       {aktualna && (
         <section className="space-y-2">

@@ -75,6 +75,18 @@ export function Oczekujace() {
                   )}
                 </div>
                 {w.notatka && <p className="mt-1 text-[14px] italic">„{w.notatka}”</p>}
+                {w.zadatek != null && (
+                  <div className={`mt-2 flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-[14px] ${w.zadatek_wplacony ? "bg-ziel-jasny text-ziel" : "bg-bursztyn-jasny text-bursztyn"}`}>
+                    <span className="font-semibold">
+                      Zadatek {w.zadatek} zł {w.zadatek_wplacony ? "wpłacony ✓" : "– sprawdź, czy wpłynął"}
+                    </span>
+                    {!w.zadatek_wplacony && (
+                      <button className="font-bold underline" onClick={() => api.zmien.mutate({ id: w.id, zadatek_wplacony: true })}>
+                        Wpłynął
+                      </button>
+                    )}
+                  </div>
+                )}
                 <div className="mt-2.5 grid grid-cols-2 gap-2">
                   <button className="btn-jasny min-h-10" disabled={api.zmien.isPending} onClick={() => api.zmien.mutate({ id: w.id, status: "odwolana" })}>
                     Odrzuć

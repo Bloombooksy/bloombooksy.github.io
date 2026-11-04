@@ -18,12 +18,15 @@ export function WizytaForm({
   dzien,
   start,
   pracownik,
+  szablon,
   onClose,
 }: {
   wizyta?: WizytaZKlientka;
   dzien?: string;
   start?: string;
   pracownik?: string;
+  /** nowa wizyta na wzór poprzedniej (np. „kolejna za 3 tygodnie”) */
+  szablon?: { klientka_id: string | null; imie: string; usluga_id: string | null; czas: number; cena: number };
   onClose: () => void;
 }) {
   const salonId = useSalonId();
@@ -35,17 +38,17 @@ export function WizytaForm({
   const wizytyApi = useZapis("wizyty", ["wizyty"]);
   const klientkiApi = useZapis("klientki", ["klientki"]);
 
-  const [klientkaId, setKlientkaId] = useState<string | null>(wizyta?.klientka_id ?? null);
-  const [szukaj, setSzukaj] = useState(wizyta?.klientka?.imie ?? "");
+  const [klientkaId, setKlientkaId] = useState<string | null>(wizyta?.klientka_id ?? szablon?.klientka_id ?? null);
+  const [szukaj, setSzukaj] = useState(wizyta?.klientka?.imie ?? szablon?.imie ?? "");
   const [telefon, setTelefon] = useState("");
   const [podpowiedzi, setPodpowiedzi] = useState(false);
-  const [uslugaId, setUslugaId] = useState(wizyta?.usluga_id ?? "");
+  const [uslugaId, setUslugaId] = useState(wizyta?.usluga_id ?? szablon?.usluga_id ?? "");
   const [data, setData] = useState(wizyta ? dzienKey(wizyta.start) : (dzien ?? dzienKey()));
   const [godz, setGodz] = useState(wizyta ? godzina(wizyta.start) : (start ?? "10:00"));
   const [czas, setCzas] = useState(
-    wizyta ? Math.round((+new Date(wizyta.koniec) - +new Date(wizyta.start)) / 60000) : 60,
+    wizyta ? Math.round((+new Date(wizyta.koniec) - +new Date(wizyta.start)) / 60000) : (szablon?.czas ?? 60),
   );
-  const [cena, setCena] = useState(wizyta ? String(wizyta.cena) : "");
+  const [cena, setCena] = useState(wizyta ? String(wizyta.cena) : szablon ? String(szablon.cena) : "");
   const [notatka, setNotatka] = useState(wizyta?.notatka ?? "");
   const [blad, setBlad] = useState("");
   const [zapisuje, setZapisuje] = useState(false);
@@ -320,6 +323,20 @@ export function WizytaForm({
           >
             Wyślij klientce SMS z wizytą
           </WyslijSms>
+        )}
+        {wizyta && wizyta.zadatek != null && (
+          <label className="flex items-center justify-between gap-3 rounded-xl bg-piasek/50 px-3.5 py-3">
+            <span className="text-[15px]">
+              Zadatek <b>{wizyta.zadatek} zł</b> {wizyta.zadatek_wplacony ? "wpłacony" : "– jeszcze nie wpłacony"}
+            </span>
+            <input
+              type="checkbox"
+              className="size-5 accent-[#4f7a5b]"
+              checked={wizyta.zadatek_wplacony}
+              onChange={(e) => wizytyApi.zmien.mutate({ id: wizyta.id, zadatek_wplacony: e.target.checked }, { onSuccess: onClose })}
+              aria-label="Zadatek wpłacony"
+            />
+          </label>
         )}
         {wizyta?.odwolala_klientka && <p className="rounded-xl bg-roz-jasny px-3.5 py-2.5 text-[14px] font-semibold text-[#8a2f3a]">Klientka sama odwołała tę wizytę.</p>}
         {wizyta && wizyta.status !== "zrealizowana" && (

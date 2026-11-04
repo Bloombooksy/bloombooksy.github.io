@@ -21,6 +21,10 @@ type Salon = {
   branza: Branza;
   kolor: string;
   slug: string | null;
+  zadatek_tryb: "wybrane" | "nowe" | "wszyscy";
+  zadatek_kwota: number;
+  zadatek_instrukcja: string;
+  link_opinii: string;
 };
 
 export type Branza = "paznokcie" | "rzesy_brwi" | "fryzjer" | "barber" | "kosmetyka" | "masaz" | "inne";
@@ -77,6 +81,8 @@ type Wizyta = {
   kod: string;
   odwolala_klientka: boolean;
   pracownik_id: string;
+  zadatek: number | null;
+  zadatek_wplacony: boolean;
 };
 
 type Klientka = {
@@ -88,6 +94,9 @@ type Klientka = {
   salon_id: string;
   telefon: string;
   zgoda_sms: boolean;
+  zablokowana: boolean;
+  wymaga_zadatku: boolean;
+  prosba_o_opinie: string | null;
 };
 
 type Usluga = {

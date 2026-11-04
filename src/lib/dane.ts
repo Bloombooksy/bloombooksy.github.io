@@ -17,7 +17,7 @@ import { dodajDni, wStrefie } from "./czas";
 
 type Tabele = Database["public"]["Tables"];
 
-export type WizytaZKlientka = WizytaRow & { klientka: Pick<KlientkaRow, "id" | "imie" | "telefon" | "instagram"> | null };
+export type WizytaZKlientka = WizytaRow & { klientka: Pick<KlientkaRow, "id" | "imie" | "telefon" | "instagram" | "prosba_o_opinie" | "zablokowana"> | null };
 
 function ok<T>(r: { data: T | null; error: unknown }): T {
   if (r.error) throw r.error;
@@ -119,7 +119,7 @@ export function usePrzerwy(od: string, doDnia: string) {
   });
 }
 
-const WIZYTA_SELECT = "*, klientka:klientki(id, imie, telefon, instagram)";
+const WIZYTA_SELECT = "*, klientka:klientki(id, imie, telefon, instagram, prosba_o_opinie, zablokowana)";
 
 /** Wizyty z zakresu dni (włącznie). */
 export function useWizyty(od: string, doDnia: string) {

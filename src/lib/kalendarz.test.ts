@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { linkGoogle, plikIcs } from "./kalendarz";
-import { linkWizyty, linkZapisow, smsHref, trescWizyty, trescZaproszenia } from "./wiadomosci";
+import { linkWizyty, linkZapisow, smsHref, trescProsbyOOpinie, trescWizyty, trescZaproszenia } from "./wiadomosci";
 
 const e = {
   tytul: "Manicure hybrydowy – Bloom Beauty",
@@ -44,5 +44,11 @@ describe("wiadomości do klientek", () => {
     const t = trescWizyty({ imie: "Ola Nowak", start: "2026-11-07T08:00:00Z", usluga: "Manicure", salon: "Bloom Beauty", link: linkWizyty("k1", baza) });
     expect(t).toBe(`Hej Ola! Potwierdzam wizytę: sob 7.11, godz. 09:00 – Manicure. Szczegóły i dodanie do kalendarza: ${baza}#/wizyta/k1 Bloom Beauty`);
     expect(trescZaproszenia("", "L")).toBe("Hej! Tu możesz sama wybrać wolny termin na paznokcie: L");
+  });
+
+  it("prośba o opinię Google", () => {
+    expect(trescProsbyOOpinie("Ola Nowak", "Bloom Beauty", "https://g.page/r/x/review")).toBe(
+      "Dziękuję za wizytę, Ola! Będzie mi bardzo miło, jeśli zostawisz krótką opinię – to bardzo pomaga Bloom Beauty: https://g.page/r/x/review",
+    );
   });
 });
