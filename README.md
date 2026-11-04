@@ -1,4 +1,6 @@
-# Terminarz Bloom Beauty
+# BloomBooksy – terminarz Bloom Beauty
+
+**Aplikacja:** https://bloombooksy.github.io/
 
 Aplikacja, która zastępuje papierowy kalendarz w salonie paznokci [Bloom Beauty](https://bloombeauty.com.pl) w Oświęcimiu.
 Właścicielka zapisuje w niej wizyty i odhacza klientki. Kwotę z wizyty wpisuje dwoma tapnięciami i od razu widzi utarg dnia.

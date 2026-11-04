@@ -15,8 +15,7 @@ const NAV = [
 export function Logo({ maly }: { maly?: boolean }) {
   return (
     <span className={`font-serif font-semibold tracking-tight ${maly ? "text-lg" : "text-2xl"}`}>
-      Bloom<span className="text-zloto">·</span>Beauty
-      <span className="ml-2 align-middle font-sans text-[11px] font-bold tracking-[0.2em] text-szary uppercase">terminarz</span>
+      Bloom<span className="text-zloto">Booksy</span>
     </span>
   );
 }

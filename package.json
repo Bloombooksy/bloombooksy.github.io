@@ -1,9 +1,9 @@
 {
-  "name": "bloombeauty-terminarz",
+  "name": "bloombooksy",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Terminarz dla salonu paznokci: kalendarz wizyt, dzień pracy z utargiem, zapisy przez link i przypomnienia SMS.",
+  "description": "BloomBooksy – terminarz dla salonu paznokci: kalendarz wizyt, dzień pracy z utargiem, zapisy przez link i przypomnienia SMS.",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

@@ -27,7 +27,7 @@ describe("dodawanie do kalendarza", () => {
 });
 
 describe("wiadomości do klientek", () => {
-  const baza = "https://hpogodala2912.github.io/bloombeauty-terminarz/";
+  const baza = "https://bloombooksy.github.io/";
 
   it("link do zapisów z imieniem i numerem", () => {
     expect(linkZapisow("tok", { imie: "Ola Nowak", telefon: "690 000 001" }, baza)).toBe(
