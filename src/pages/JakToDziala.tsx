@@ -7,7 +7,7 @@ import { DEMO, OFERTA, kosztBloomly, kosztBooksy } from "../lib/oferta";
 const zl = (n: number) => `${new Intl.NumberFormat("pl-PL").format(Math.round(n))} zł`;
 const SALON = "Studio Bloom";
 const KOLOR = "#c9707a";
-const LINK = "bloomly.pl/zapisy/studio-bloom";
+const LINK = "app.bloomly.com.pl/#/zapisy/studio-bloom";
 
 /** „Jak to działa” – droga klientki od SMS-a z linkiem do przypomnienia, krok po kroku na telefonie. */
 export default function JakToDziala() {
