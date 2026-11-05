@@ -1,7 +1,6 @@
 -- Salon demo do pokazywania Bloomly: konto demo@bloomly.example (hasło publiczne, podane na stronie),
 -- trzy osoby w zespole, cennik, klientki i wizyty wokół dzisiejszego dnia. Odświeżany co noc.
--- STAN: salon demo został utworzony jednorazowo (wersja bez usuwania danych); tę migrację z nocnym odświeżaniem
--- trzeba zastosować po zatwierdzeniu przez właściciela projektu (zawiera DELETE).
+-- Zastosowana 6.11.2026 po zatwierdzeniu przez właściciela projektu.
 
 create or replace function prywatne.demo_odswiez() returns void
 language plpgsql security definer set search_path = public, extensions as $$
@@ -46,8 +45,10 @@ begin
   delete from public.wizyty where salon_id in (select id from public.salony where owner_id = uid);
   delete from public.salony where owner_id = uid;
   update public.salony set slug = null where slug = 'demo';
-  insert into public.salony (owner_id, nazwa, branza, kolor, slug, adres, telefon, zapisy_wyprzedzenie_h, sms_wlaczone)
-  values (uid, 'Studio Bloom (demo)', 'paznokcie', '#c9707a', 'demo', 'ul. Przykładowa 1, 00-001 Warszawa', '500 000 000', 2, false)
+  insert into public.salony (owner_id, nazwa, branza, kolor, slug, adres, telefon, zapisy_wyprzedzenie_h, sms_wlaczone,
+                             pakiet, proba_do, regulamin_wersja, regulamin_akceptacja, info_dla_klientki, powrot_wlaczony)
+  values (uid, 'Studio Bloom (demo)', 'paznokcie', '#c9707a', 'demo', 'ul. Przykładowa 1, 00-001 Warszawa', '500 000 000', 2, false,
+          'premium', '2099-01-01', 'demo', now(), 'To salon pokazowy Bloomly – możesz się zapisać, nikt nie przyjdzie :)', false)
   returning id into sid;
 
   insert into public.pracownicy (salon_id, imie, user_id, rola, kolor, kolejnosc) values (sid, 'Ola', uid, 'wlascicielka', '#7a5a47', 0) returning id into ola;
@@ -75,8 +76,10 @@ begin
   select uslugi_ids[x], p from generate_series(1, 4) x, unnest(array[ola, kasia]) p
   union all select uslugi_ids[x], nati from generate_series(5, 6) x;
 
-  insert into public.klientki (salon_id, imie, telefon, notatka)
-  select sid, imiona[x], '50000' || lpad(x::text, 4, '0'), case when x % 5 = 0 then 'Lubi nude i krótkie migdały' else '' end
+  insert into public.klientki (salon_id, imie, telefon, notatka, alergie, email, zgoda_powrot)
+  select sid, imiona[x], '50000' || lpad(x::text, 4, '0'), case when x % 5 = 0 then 'Lubi nude i krótkie migdały' else '' end,
+         case when x = 3 then 'uczulenie na HEMA' else '' end,
+         case when x % 2 = 0 then 'klientka' || x || '@example.com' else '' end, x % 2 = 0
   from generate_series(1, array_length(imiona, 1)) x;
   select array_agg(id order by imie) into klientki_ids from public.klientki where salon_id = sid;
 
