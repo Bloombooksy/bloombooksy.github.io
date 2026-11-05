@@ -8,6 +8,7 @@ import { zl } from "../lib/pieniadze";
 import { normalizujTelefon } from "../lib/sms";
 import { Blad, Ladowanie } from "../components/ui";
 import { Ekran } from "../components/EkranKlientki";
+import { ListaOczekujacychZapis } from "../components/ListaOczekujacychZapis";
 
 type Osoba = { id: string; imie: string; kolor: string };
 type Info = {
@@ -222,6 +223,10 @@ export default function Zapisy() {
             </div>
           )}
         </Krok>
+      )}
+
+      {usluga && dzien && !start && (
+        <ListaOczekujacychZapis token={token} uslugaId={uslugaId} osobaId={osobaId} dzien={dzien} imie={imie} telefon={telefon} />
       )}
 
       {blad && !start && <Blad>{blad}</Blad>}

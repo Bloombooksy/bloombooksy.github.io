@@ -3,6 +3,7 @@ import { AlertTriangle, AtSign, Check, FileUp, Phone, Plus, Repeat, Search, User
 import { ImportKlientek } from "../components/ImportKlientek";
 import { usePowroty, useHistoriaKlientki, useKlientki, useSalon, useSalonId, useZapis } from "../lib/dane";
 import { ZdjeciaKlientki } from "../components/ZdjeciaKlientki";
+import { ListaOczekujacych } from "../components/ListaOczekujacych";
 import { supabase } from "../lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
 import { linkZapisow, trescPowrotu, trescZaproszenia } from "../lib/wiadomosci";
@@ -39,6 +40,7 @@ export default function Klientki() {
           </button>
         </div>
       </div>
+      <ListaOczekujacych />
       <Powroty />
       <label className="relative block">
         <Search className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-szary" />

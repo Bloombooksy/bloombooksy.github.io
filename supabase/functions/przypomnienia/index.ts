@@ -1,4 +1,5 @@
-// Przypomnienia o jutrzejszych wizytach. Woła ją pg_cron co godzinę (nagłówek x-cron-klucz).
+// Przypomnienia o jutrzejszych wizytach, „czas na kolejną wizytę”, lista oczekujących i trwałe usuwanie salonów.
+// Woła ją pg_cron co 5 minut (nagłówek x-cron-klucz).
 // Pakiet Premium: SMS (do miesięcznego limitu salonu), potem mail. Pakiet Start: mail.
 // Bez SMSAPI_TOKEN / RESEND_API_KEY działa w trybie testowym: nic nie wysyła, oznacza wizyty jako "test".
 import { createClient } from "jsr:@supabase/supabase-js@2";
@@ -106,6 +107,39 @@ function trescPowrotu(p: Powrot) {
   <p style="max-width:480px;margin:14px auto 0;font-size:12px;line-height:1.5;color:#8a8796;text-align:center">Dostajesz tę wiadomość, bo zgodziłaś się na przypomnienie o kolejnej wizycie w ${html(p.salon)}. <a href="${wypisz}" style="color:#8a8796">Nie chcę takich przypomnień</a></p>
 </div>`;
   return { temat, tekst, body, wypisz };
+}
+
+type Wolny = {
+  wpis_id: string; zwolniony_id: string; salon: string; kolor: string; link: string; imie: string; email: string;
+  usluga: string; start: string; strefa: string; pracownik: string | null;
+};
+
+function trescWolnego(l: Wolny) {
+  const { dataPelna, godzina } = czesci(l.start, l.strefa);
+  const imie = l.imie.trim().split(/\s+/)[0] ?? "";
+  const kolor = /^#[0-9a-f]{6}$/i.test(l.kolor) ? l.kolor : "#c2185b";
+  const link = `${APP}/#/zapisy/${encodeURIComponent(l.link)}`;
+  const kto = l.pracownik ? ` u ${l.pracownik}` : "";
+  const temat = `Zwolnił się termin: ${dataPelna}, ${godzina} – ${l.salon}`;
+  const tekst = [
+    `Cześć${imie ? ` ${imie}` : ""}!`,
+    `W ${l.salon} zwolnił się termin${kto}: ${dataPelna}, ${godzina}${l.usluga ? ` (${l.usluga})` : ""}.`,
+    `Kto pierwszy, ten lepszy – zarezerwuj: ${link}`,
+    "",
+    "Dostajesz tę wiadomość, bo zapisałaś się na listę oczekujących.",
+  ].join("\n");
+  const body = `<div style="background:#fdf8f8;padding:28px 14px;font-family:Arial,Helvetica,sans-serif;color:#1f1d2b">
+  <div style="max-width:480px;margin:0 auto;background:#fff;border-radius:20px;padding:28px 26px;border-top:6px solid ${kolor}">
+    <p style="margin:0 0 6px;font-size:14px;color:#8a8796">${html(l.salon)}</p>
+    <h1 style="margin:0 0 14px;font-size:22px;line-height:1.3">Zwolnił się termin${imie ? `, ${html(imie)}` : ""}!</h1>
+    <p style="margin:0 0 4px;font-size:28px;font-weight:bold;color:${kolor}">${godzina}</p>
+    <p style="margin:0 0 18px;font-size:16px">${html(dataPelna)}${html(kto)}</p>
+    <p style="margin:0 0 20px;font-size:15px;line-height:1.5;color:#4a4757">Kto pierwszy, ten lepszy – ten sam mail mogły dostać inne osoby z listy.</p>
+    <a href="${link}" style="display:inline-block;background:${kolor};color:#fff;text-decoration:none;font-weight:bold;font-size:16px;padding:13px 24px;border-radius:999px">Zarezerwuj termin</a>
+  </div>
+  <p style="max-width:480px;margin:14px auto 0;font-size:12px;color:#8a8796;text-align:center">Dostajesz tę wiadomość, bo zapisałaś się na listę oczekujących w ${html(l.salon)}.</p>
+</div>`;
+  return { temat, tekst, body };
 }
 
 Deno.serve(async (req) => {
@@ -251,5 +285,38 @@ Deno.serve(async (req) => {
       await db.from("klientki").update({ powrot_wyslano: new Date().toISOString() }).eq("id", p.klientka_id);
     }
   }
-  return Response.json({ ...wynik, powroty });
+  // 5) Lista oczekujących – mail o zwolnionym terminie (kto pierwszy, ten lepszy)
+  const lista = { mail: 0, bledy: 0 };
+  if (resendKey) {
+    const { data: lw } = await db.rpc("lista_do_powiadomienia");
+    for (const l of (lw ?? []) as Wolny[]) {
+      const m = trescWolnego(l);
+      try {
+        const r = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ from: `${l.salon.replace(/["<>]/g, "")} (Bloomly) <${NADAWCA_MAIL}>`, to: [l.email], subject: m.temat, html: m.body, text: m.tekst }),
+        });
+        if (r.ok) lista.mail++;
+        else lista.bledy++;
+      } catch {
+        lista.bledy++;
+      }
+      await db.from("lista_powiadomienia").insert({ wpis_id: l.wpis_id, zwolniony_id: l.zwolniony_id });
+      await db.from("lista_oczekujacych").update({ powiadomiono: new Date().toISOString() }).eq("id", l.wpis_id);
+    }
+  }
+  // zwolnione terminy starsze niż 15 min uznajemy za obsłużone (nikt więcej z listy nie pasował)
+  await db.from("zwolnione_terminy").update({ obsluzone: true }).eq("obsluzone", false).lt("created_at", new Date(Date.now() - 15 * 60_000).toISOString());
+
+  // 6) Trwałe usunięcie salonów 30 dni po „Usuń salon” (najpierw pliki zdjęć, potem dane i konto właścicielki)
+  let usuniete = 0;
+  const { data: du } = await db.rpc("salony_do_usuniecia_trwale");
+  for (const d of (du ?? []) as { salon_id: string; pliki: string[] }[]) {
+    for (let i = 0; i < d.pliki.length; i += 100) await db.storage.from("zdjecia").remove(d.pliki.slice(i, i + 100));
+    const { error: e } = await db.rpc("usun_salon_trwale", { p_salon: d.salon_id });
+    if (!e) usuniete++;
+  }
+
+  return Response.json({ ...wynik, powroty, lista, usuniete });
 });

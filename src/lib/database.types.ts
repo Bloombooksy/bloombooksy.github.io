@@ -138,6 +138,22 @@ type Zdjecie = {
   created_at: string;
 };
 
+type WpisListy = {
+  id: string;
+  salon_id: string;
+  usluga_id: string | null;
+  pracownik_id: string | null;
+  imie: string;
+  telefon: string;
+  email: string;
+  od: string;
+  do_dnia: string;
+  uwagi: string;
+  powiadomiono: string | null;
+  zalatwione: boolean;
+  created_at: string;
+};
+
 type GodzinyPracy = { do_godz: string; dzien: number; od_godz: string; salon_id: string };
 type Przerwa = { id: string; koniec: string; opis: string; salon_id: string; start: string; pracownik_id: string | null };
 
@@ -162,6 +178,7 @@ export type Database = {
       uslugi_pracownicy: T<UslugaPracownik, "usluga_id" | "pracownik_id">;
       godziny_pracownikow: T<GodzinyPracownika, "pracownik_id" | "dzien" | "od_godz" | "do_godz">;
       zdjecia: T<Zdjecie, "salon_id" | "klientka_id" | "sciezka">;
+      lista_oczekujacych: T<WpisListy, "salon_id" | "imie" | "od" | "do_dnia">;
     };
     Views: { [_ in never]: never };
     Functions: {
@@ -197,6 +214,13 @@ export type Database = {
       usun_salon: { Args: { p_nazwa: string }; Returns: string };
       anuluj_usuniecie: { Args: never; Returns: undefined };
       moje_powroty: { Args: never; Returns: Json[] };
+      zapisy_lista_dopisz: {
+        Args: {
+          p_token: string; p_usluga: string | null; p_od: string; p_do: string; p_imie: string; p_telefon: string;
+          p_email?: string; p_uwagi?: string; p_pracownik?: string | null;
+        };
+        Returns: Json;
+      };
       powrot_wypisz: { Args: { p_kod: string }; Returns: boolean };
       zapisy_rezerwuj_v4: {
         Args: {

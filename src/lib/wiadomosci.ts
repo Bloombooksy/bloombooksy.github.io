@@ -61,3 +61,9 @@ export function trescPowrotu(imie: string, salon: string, link: string): string 
   const i = pierwsze(imie);
   return `${i ? `Hej ${i}! ` : "Hej! "}Czas na kolejną wizytę? Wolne terminy w ${salon} wybierzesz tutaj: ${link}`;
 }
+
+/** Do osoby z listy oczekujących: zwolnił się termin (SMS z telefonu salonu). */
+export function trescZwolnienia(imie: string, salon: string, link: string): string {
+  const i = pierwsze(imie);
+  return `${i ? `Hej ${i}! ` : "Hej! "}Zwolnił się termin w ${salon}. Wolne godziny i rezerwacja: ${link}`;
+}
