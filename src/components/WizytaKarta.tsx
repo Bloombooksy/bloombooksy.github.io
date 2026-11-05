@@ -7,9 +7,10 @@ import { ladnyTelefon } from "../lib/sms";
 
 const SMS_TXT: Record<string, string> = {
   wyslany: "SMS wysłany",
-  test: "SMS (tryb testowy)",
-  blad: "SMS: błąd",
-  pominiety: "SMS pominięty",
+  mail: "Przypomnienie mailem",
+  test: "Przypomnienie (tryb testowy)",
+  blad: "Przypomnienie: błąd",
+  pominiety: "Bez przypomnienia",
 };
 
 export function WizytaKarta({

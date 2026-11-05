@@ -43,6 +43,7 @@ export default function Zapisy() {
   // link wysłany przez Madzię może mieć już imię i numer klientki
   const [imie, setImie] = useState(params.get("imie") ?? "");
   const [telefon, setTelefon] = useState(params.get("tel") ?? "");
+  const [email, setEmail] = useState("");
   const [notatka, setNotatka] = useState("");
   const [blad, setBlad] = useState("");
   const [wysylam, setWysylam] = useState(false);
@@ -89,7 +90,7 @@ export default function Zapisy() {
     setBlad("");
     if (!normalizujTelefon(telefon)) return setBlad("Podaj poprawny numer telefonu.");
     setWysylam(true);
-    const { data, error } = await supabase.rpc("zapisy_rezerwuj_v2", {
+    const { data, error } = await supabase.rpc("zapisy_rezerwuj_v3", {
       p_token: token,
       p_usluga: uslugaId,
       p_start: start,
@@ -97,6 +98,7 @@ export default function Zapisy() {
       p_telefon: telefon,
       p_notatka: notatka,
       p_pracownik: osobaId || wybranyTermin?.pracownik_id || null,
+      p_email: email.trim(),
     });
     setWysylam(false);
     if (error) {
@@ -232,6 +234,7 @@ export default function Zapisy() {
               </p>
               <input aria-label="Imię i nazwisko" required minLength={2} maxLength={80} autoComplete="name" className="pole" placeholder="Imię i nazwisko" value={imie} onChange={(e) => setImie(e.target.value)} />
               <input aria-label="Telefon" required type="tel" inputMode="tel" autoComplete="tel" className="pole" placeholder="Telefon" value={telefon} onChange={(e) => setTelefon(e.target.value)} />
+              <input aria-label="E-mail (opcjonalnie)" type="email" inputMode="email" autoComplete="email" maxLength={120} className="pole" placeholder="E-mail (opcjonalnie)" value={email} onChange={(e) => setEmail(e.target.value)} />
               <textarea aria-label="Wiadomość" rows={2} maxLength={500} className="pole resize-none" placeholder="Wiadomość (opcjonalnie) – np. kolor, zdobienia" value={notatka} onChange={(e) => setNotatka(e.target.value)} />
               {info.data.zadatek && (
                 <p className="rounded-xl bg-bursztyn-jasny px-3.5 py-2.5 text-[14px] text-bursztyn">
@@ -239,7 +242,7 @@ export default function Zapisy() {
                   <b>{info.data.zadatek.kwota} zł</b> – po zapisie zobaczysz, jak go wpłacić. Zadatek jest częścią ceny.
                 </p>
               )}
-              <p className="text-[13px] text-szary">Numer służy tylko do potwierdzenia wizyty i przypomnienia SMS dzień wcześniej.</p>
+              <p className="text-[13px] text-szary">Telefon i e-mail służą tylko do potwierdzenia wizyty i przypomnienia dzień wcześniej.</p>
               <Blad>{blad}</Blad>
               <button disabled={wysylam} className="btn-glowny w-full">
                 {wysylam ? "Zapisuję…" : "Zapisz mnie"}

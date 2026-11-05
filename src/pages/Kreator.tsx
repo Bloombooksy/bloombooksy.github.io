@@ -6,6 +6,8 @@ import type { Branza } from "../lib/database.types";
 import { BRANZE, KOLORY_SALONU } from "../lib/branze";
 import { Blad } from "../components/ui";
 import { Logo } from "../components/Layout";
+import { ZgodaRegulamin } from "../components/PasekPakietu";
+import { REGULAMIN } from "../lib/oferta";
 
 /** Pierwsze logowanie: salon zakłada się sam w minutę – nazwa, branża (gotowy cennik), kolor. */
 export default function Kreator() {
@@ -16,12 +18,15 @@ export default function Kreator() {
   const [kolor, setKolor] = useState(KOLORY_SALONU[0]!);
   const [blad, setBlad] = useState("");
   const [czeka, setCzeka] = useState(false);
+  const [zgoda, setZgoda] = useState(false);
 
   async function zaloz(e: React.FormEvent) {
     e.preventDefault();
     setBlad("");
+    if (!zgoda) return setBlad("Zaakceptuj regulamin, żeby założyć salon.");
     setCzeka(true);
     const { error } = await supabase.rpc("zaloz_salon", { p_nazwa: nazwa, p_branza: branza, p_kolor: kolor, p_imie: imie });
+    if (!error) await supabase.rpc("akceptuj_regulamin", { p_wersja: REGULAMIN.wersja });
     setCzeka(false);
     if (error) return setBlad(komunikat(error));
     await qc.invalidateQueries();
@@ -92,6 +97,8 @@ export default function Kreator() {
           </div>
         </fieldset>
 
+        <ZgodaRegulamin zgoda={zgoda} onZmien={setZgoda} />
+        <p className="text-[13px] text-szary">Masz 14 dni za darmo, bez podawania karty. Potem wybierasz pakiet: Start albo Premium.</p>
         <Blad>{blad}</Blad>
         <button disabled={czeka} className="btn-glowny w-full">
           {czeka ? "Zakładam…" : "Załóż salon"}

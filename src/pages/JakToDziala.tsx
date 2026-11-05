@@ -84,7 +84,7 @@ const KROKI: Krok[] = [
   {
     kto: "Klientka",
     tytul: "Dostaje przypomnienie dzień przed",
-    opis: "Bloomly samo wysyła SMS dzień przed wizytą, o godzinie, którą ustawisz. Mniej zapomnianych wizyt, zero pisania z Twojej strony.",
+    opis: "Dzień przed wizytą Bloomly wysyła jej mail z godziną i linkiem do odwołania. W pakiecie Premium – automatyczny SMS. Mniej zapomnianych wizyt, zero pisania z Twojej strony.",
     ekran: () => (
       <EkranSms
         nadawca={SALON}
@@ -344,7 +344,7 @@ function TwojSalon() {
   const elementy = [
     { ikona: Link2, tytul: "Link z nazwą salonu", opis: `Adres w stylu ${LINK} – do bio na Instagramie, wizytówki Google i SMS-ów.` },
     { ikona: Palette, tytul: "Twoje kolory i nazwa", opis: "Strona zapisów i strona wizyty klientki mają Twój kolor i nazwę salonu. Bez obcych logo i reklam." },
-    { ikona: MessageSquareText, tytul: "SMS podpisany salonem", opis: "Przypomnienia przychodzą od nazwy Twojego salonu, a nie od numeru portalu." },
+    { ikona: MessageSquareText, tytul: "Przypomnienia od salonu", opis: "Mail i SMS są podpisane nazwą Twojego salonu, a nie portalu." },
     { ikona: Smartphone, tytul: "Aplikacja na ekranie telefonu", opis: "Dodajesz Bloomly do ekranu głównego i otwierasz jak zwykłą aplikację – na iPhonie i Androidzie." },
   ];
   return (
@@ -380,12 +380,13 @@ function Sms() {
   const wiersze = [
     ["Zaproszenie z linkiem do zapisów", "Kiedy chcesz", "Ty, ze swojego telefonu – treść jest gotowa", "0 zł (w Twoim abonamencie)"],
     ["Potwierdzenie wizyty z linkiem do kalendarza", "Po dodaniu lub potwierdzeniu wizyty", "Ty, jednym tapnięciem", "0 zł (w Twoim abonamencie)"],
-    ["Przypomnienie o wizycie", "Dzień wcześniej, o godzinie, którą ustawisz", "Bloomly, automatycznie, podpisane nazwą salonu", `${OFERTA.smsWCenie} SMS miesięcznie w cenie`],
+    ["Przypomnienie mailem", "Dzień wcześniej, o godzinie, którą ustawisz", "Bloomly, automatycznie, w kolorach salonu", "W cenie (pakiet Start)"],
+    ["Przypomnienie SMS", "Dzień wcześniej", "Ty jednym tapnięciem – albo Bloomly automatycznie w Premium", `0 zł z Twojego telefonu; w Premium ${OFERTA.smsWCenie} SMS miesięcznie w cenie`],
   ];
   return (
     <section className="ld-pas">
       <div className="mx-auto max-w-6xl px-5 py-20">
-        <h2 className="ld-h2 max-w-3xl">SMS-y: które, kiedy i ile kosztują.</h2>
+        <h2 className="ld-h2 max-w-3xl">Wiadomości: które, kiedy i ile kosztują.</h2>
         <div className="mt-10 overflow-x-auto">
           <table className="jk-tabela">
             <thead>

@@ -16,7 +16,7 @@ export function linkGoogle(e: Wydarzenie): string {
 
 const esc = (t: string) => t.replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/([,;])/g, "\\$1");
 
-/** Treść pliku .ics z przypomnieniem 2 godziny wcześniej. */
+/** Treść pliku .ics z przypomnieniami dzień i 2 godziny wcześniej. */
 export function plikIcs(e: Wydarzenie, teraz = new Date().toISOString()): string {
   const linie = [
     "BEGIN:VCALENDAR",
@@ -32,6 +32,11 @@ export function plikIcs(e: Wydarzenie, teraz = new Date().toISOString()): string
     `SUMMARY:${esc(e.tytul)}`,
     ...(e.miejsce ? [`LOCATION:${esc(e.miejsce)}`] : []),
     ...(e.opis ? [`DESCRIPTION:${esc(e.opis)}`] : []),
+    "BEGIN:VALARM",
+    "TRIGGER:-P1D",
+    "ACTION:DISPLAY",
+    `DESCRIPTION:Jutro: ${esc(e.tytul)}`,
+    "END:VALARM",
     "BEGIN:VALARM",
     "TRIGGER:-PT2H",
     "ACTION:DISPLAY",

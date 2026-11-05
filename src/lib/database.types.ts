@@ -25,7 +25,15 @@ type Salon = {
   zadatek_kwota: number;
   zadatek_instrukcja: string;
   link_opinii: string;
+  pakiet: Pakiet;
+  proba_do: string;
+  oplacone_do: string | null;
+  sms_limit: number;
+  regulamin_wersja: string | null;
+  regulamin_akceptacja: string | null;
 };
+
+export type Pakiet = "start" | "premium";
 
 export type Branza = "paznokcie" | "rzesy_brwi" | "fryzjer" | "barber" | "kosmetyka" | "masaz" | "inne";
 export type Rola = "wlascicielka" | "pracownik";
@@ -56,7 +64,7 @@ type Rel = {
 
 export type StatusWizyty = "oczekuje" | "potwierdzona" | "zrealizowana" | "odwolana" | "nieobecnosc";
 export type ZrodloWizyty = "panel" | "link";
-export type SmsStatus = "brak" | "wyslany" | "blad" | "pominiety" | "test";
+export type SmsStatus = "brak" | "wyslany" | "blad" | "pominiety" | "test" | "mail";
 export type Platnosc = "gotowka" | "karta" | "blik" | "przelew";
 
 type Wizyta = {
@@ -97,6 +105,7 @@ type Klientka = {
   zablokowana: boolean;
   wymaga_zadatku: boolean;
   prosba_o_opinie: string | null;
+  email: string;
 };
 
 type Usluga = {
@@ -158,6 +167,15 @@ export type Database = {
         Returns: Json;
       };
       wizyta_odwolaj: { Args: { p_kod: string }; Returns: Json };
+      zapisy_rezerwuj_v3: {
+        Args: {
+          p_token: string; p_usluga: string; p_start: string; p_imie: string; p_telefon: string;
+          p_notatka?: string; p_pracownik?: string | null; p_email?: string;
+        };
+        Returns: Json;
+      };
+      moj_pakiet: { Args: never; Returns: Json };
+      akceptuj_regulamin: { Args: { p_wersja: string }; Returns: undefined };
     };
     Enums: {
       platnosc: Platnosc;

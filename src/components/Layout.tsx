@@ -4,6 +4,7 @@ import { ZnakBloomly } from "./ZnakBloomly";
 import { NavLink } from "react-router-dom";
 import { CalendarDays, Menu, Sun, Users } from "lucide-react";
 import { useKontekst } from "../lib/dane";
+import { PasekPakietu } from "./PasekPakietu";
 
 const Kreator = lazy(() => import("../pages/Kreator"));
 import { Blad, Ladowanie } from "./ui";
@@ -71,6 +72,7 @@ export function Layout({ children }: { children: ReactNode }) {
             </button>
           </div>
         )}
+        {k.data && <PasekPakietu demo={demo} />}
         {k.isLoading ? <Ladowanie /> : k.error ? <Blad>{komunikat(k.error)}</Blad> : children}
       </main>
 

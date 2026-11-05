@@ -1,8 +1,23 @@
 import { useEffect, useState } from "react";
 import { MessageSquareText } from "lucide-react";
-import { useSalon, useWizyty, useZmienSalon } from "../lib/dane";
-import { dodajDni, DNI_KROTKO, dzienKey, dzienTygodnia, godzina, krotkaData } from "../lib/czas";
-import { bezPolskichZnakow, DOMYSLNY_SZABLON, liczbaCzesci, renderSzablon } from "../lib/sms";
+import { usePakiet, useSalon, useWizyty, useZmienSalon } from "../lib/dane";
+import { linkWizyty, trescPrzypomnienia } from "../lib/wiadomosci";
+import { WyslijSms } from "../components/WyslijSms";
+import { Link } from "react-router-dom";
+import {
+  dodajDni,
+  DNI_KROTKO,
+  dzienKey,
+  dzienTygodnia,
+  godzina,
+  krotkaData,
+} from "../lib/czas";
+import {
+  bezPolskichZnakow,
+  DOMYSLNY_SZABLON,
+  liczbaCzesci,
+  renderSzablon,
+} from "../lib/sms";
 import { komunikat } from "../lib/supabase";
 import { Blad, Przelacznik } from "../components/ui";
 import { Wstecz } from "../components/Wstecz";
@@ -10,14 +25,17 @@ import { Wstecz } from "../components/Wstecz";
 const ZMIENNE = ["{imie}", "{data}", "{godzina}", "{usluga}", "{salon}"];
 const OPIS_STATUSU: Record<string, string> = {
   brak: "czeka na wysyłkę",
-  wyslany: "wysłany ✓",
+  wyslany: "SMS wysłany ✓",
+  mail: "mail wysłany ✓",
   test: "tryb testowy (nie wyszedł)",
   blad: "błąd",
-  pominiety: "pominięty",
+  pominiety: "bez przypomnienia",
 };
 
 export default function Sms() {
   const { data: s } = useSalon();
+  const { data: pakiet } = usePakiet();
+  const premium = pakiet?.pakiet === "premium";
   const zmien = useZmienSalon();
   const jutro = dodajDni(dzienKey(), 1);
   const { data: wizyty = [] } = useWizyty(jutro, jutro);
@@ -41,24 +59,61 @@ export default function Sms() {
     salon: s.nazwa,
   });
   const czesci = liczbaCzesci(podglad);
-  const doWyslania = wizyty.filter((w) => w.status === "potwierdzona" || w.status === "oczekuje");
+  const doWyslania = wizyty.filter(
+    (w) => w.status === "potwierdzona" || w.status === "oczekuje",
+  );
   const ustaw = (z: Record<string, unknown>) =>
-    zmien.mutate({ id: s.id, ...z }, { onError: (e) => setBlad(komunikat(e)), onSuccess: () => setZapisano(true) });
+    zmien.mutate(
+      { id: s.id, ...z },
+      {
+        onError: (e) => setBlad(komunikat(e)),
+        onSuccess: () => setZapisano(true),
+      },
+    );
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
       <Wstecz />
-      <h1 className="naglowek">Przypomnienia SMS</h1>
+      <h1 className="naglowek">Przypomnienia</h1>
+      <div className="karta space-y-1.5 p-4 text-[14px]">
+        {premium ? (
+          <p>
+            <b>Pakiet Premium:</b> dzień przed wizytą klientka dostaje SMS (do{" "}
+            {pakiet?.sms_limit} w miesiącu, wykorzystane:{" "}
+            {pakiet?.sms_w_miesiacu}). Klientki bez zgody na SMS i po
+            wyczerpaniu limitu dostają mail, jeśli podały e-mail.
+          </p>
+        ) : (
+          <p>
+            <b>Pakiet Start:</b> dzień przed wizytą klientka dostaje mail z
+            przypomnieniem, jeśli podała e-mail (przy zapisie online albo w jej
+            karcie). Pozostałym wyślij SMS ze swojego telefonu – przycisk jest
+            niżej, przy jutrzejszych wizytach.{" "}
+            <Link to="/pakiet" className="font-semibold underline">
+              Automatyczne SMS-y są w Premium
+            </Link>
+            .
+          </p>
+        )}
+      </div>
       <div className="karta space-y-4 p-4">
         <Przelacznik
           wl={s.sms_wlaczone}
           onZmien={(v) => ustaw({ sms_wlaczone: v })}
           etykieta="Wysyłaj przypomnienia"
-          opis="Dzień przed wizytą, do klientek z numerem telefonu i zgodą na SMS"
+          opis={
+            premium
+              ? "Dzień przed wizytą: SMS, a gdy się nie da – mail"
+              : "Dzień przed wizytą: mail do klientek z adresem e-mail"
+          }
         />
         <label className="block">
           <span className="etykieta">Godzina wysyłki (dzień wcześniej)</span>
-          <select className="pole" value={s.sms_godzina} onChange={(e) => ustaw({ sms_godzina: +e.target.value })}>
+          <select
+            className="pole"
+            value={s.sms_godzina}
+            onChange={(e) => ustaw({ sms_godzina: +e.target.value })}
+          >
             {Array.from({ length: 13 }, (_, i) => i + 8).map((h) => (
               <option key={h} value={h}>
                 {h}:00
@@ -68,55 +123,123 @@ export default function Sms() {
         </label>
       </div>
 
-      <div className="karta space-y-3 p-4">
-        <label className="etykieta" htmlFor="sz">
-          Treść wiadomości
-        </label>
-        <textarea id="sz" rows={4} className="pole resize-y" value={szablon} onChange={(e) => {
-          setSzablon(e.target.value);
-          setZapisano(false);
-        }} />
-        <div className="flex flex-wrap gap-1.5">
-          {ZMIENNE.map((z) => (
-            <button key={z} type="button" className="rounded-full bg-piasek px-2.5 py-1 font-mono text-[12px] font-semibold text-mokka" onClick={() => setSzablon((t) => `${t}${t.endsWith(" ") ? "" : " "}${z}`)}>
-              {z}
-            </button>
-          ))}
-        </div>
-        <div className="rounded-2xl rounded-bl-md bg-[#e9e3dc] p-3.5 text-[15px]">
-          <div className="mb-1 flex items-center gap-1.5 text-[12px] font-bold text-szary">
-            <MessageSquareText className="size-3.5" /> Podgląd · {s.sms_nadawca || "nadawca"}
+      {premium && (
+        <div className="karta space-y-3 p-4">
+          <label className="etykieta" htmlFor="sz">
+            Treść automatycznego SMS-a
+          </label>
+          <textarea
+            id="sz"
+            rows={4}
+            className="pole resize-y"
+            value={szablon}
+            onChange={(e) => {
+              setSzablon(e.target.value);
+              setZapisano(false);
+            }}
+          />
+          <div className="flex flex-wrap gap-1.5">
+            {ZMIENNE.map((z) => (
+              <button
+                key={z}
+                type="button"
+                className="rounded-full bg-piasek px-2.5 py-1 font-mono text-[12px] font-semibold text-mokka"
+                onClick={() =>
+                  setSzablon((t) => `${t}${t.endsWith(" ") ? "" : " "}${z}`)
+                }
+              >
+                {z}
+              </button>
+            ))}
           </div>
-          {bezPolskichZnakow(podglad)}
+          <div className="rounded-2xl rounded-bl-md bg-[#e9e3dc] p-3.5 text-[15px]">
+            <div className="mb-1 flex items-center gap-1.5 text-[12px] font-bold text-szary">
+              <MessageSquareText className="size-3.5" /> Podgląd ·{" "}
+              {s.sms_nadawca || "nadawca"}
+            </div>
+            {bezPolskichZnakow(podglad)}
+          </div>
+          <p
+            className={`text-[13px] ${czesci > 1 ? "font-semibold text-bursztyn" : "text-szary"}`}
+          >
+            {bezPolskichZnakow(podglad).length} znaków ·{" "}
+            {czesci === 1
+              ? "1 SMS"
+              : `${czesci} SMS-y – skróć treść, żeby płacić za jeden`}
+            . Polskie znaki zamieniamy na zwykłe (ą→a), bo inaczej SMS mieści
+            tylko 70 znaków.
+          </p>
+          <label className="block">
+            <span className="etykieta">
+              Nazwa nadawcy (max 11 znaków, rejestruje się ją w SMSAPI)
+            </span>
+            <input
+              className="pole"
+              maxLength={11}
+              placeholder="np. BloomBeauty"
+              value={nadawca}
+              onChange={(e) => {
+                setNadawca(e.target.value);
+                setZapisano(false);
+              }}
+            />
+          </label>
+          <button
+            className="btn-glowny w-full"
+            disabled={zmien.isPending}
+            onClick={() =>
+              ustaw({
+                sms_szablon: szablon.trim() || DOMYSLNY_SZABLON,
+                sms_nadawca: nadawca.trim(),
+              })
+            }
+          >
+            {zapisano ? "Zapisano ✓" : "Zapisz treść"}
+          </button>
+          <Blad>{blad}</Blad>
         </div>
-        <p className={`text-[13px] ${czesci > 1 ? "font-semibold text-bursztyn" : "text-szary"}`}>
-          {bezPolskichZnakow(podglad).length} znaków · {czesci === 1 ? "1 SMS" : `${czesci} SMS-y – skróć treść, żeby płacić za jeden`}. Polskie znaki zamieniamy na
-          zwykłe (ą→a), bo inaczej SMS mieści tylko 70 znaków.
-        </p>
-        <label className="block">
-          <span className="etykieta">Nazwa nadawcy (max 11 znaków, rejestruje się ją w SMSAPI)</span>
-          <input className="pole" maxLength={11} placeholder="np. BloomBeauty" value={nadawca} onChange={(e) => {
-            setNadawca(e.target.value);
-            setZapisano(false);
-          }} />
-        </label>
-        <button className="btn-glowny w-full" disabled={zmien.isPending} onClick={() => ustaw({ sms_szablon: szablon.trim() || DOMYSLNY_SZABLON, sms_nadawca: nadawca.trim() })}>
-          {zapisano ? "Zapisano ✓" : "Zapisz treść"}
-        </button>
-        <Blad>{blad}</Blad>
-      </div>
+      )}
 
       <section className="karta p-4">
-        <h2 className="font-bold">Jutro ({krotkaData(jutro)}) – {doWyslania.length ? `${doWyslania.length} przypomnień` : "brak wizyt"}</h2>
+        <h2 className="font-bold">
+          Jutro ({krotkaData(jutro)}) –{" "}
+          {doWyslania.length
+            ? `${doWyslania.length} przypomnień`
+            : "brak wizyt"}
+        </h2>
         <ul className="mt-2 space-y-1.5 text-[14px]">
           {doWyslania.map((w) => (
             <li key={w.id} className="flex justify-between gap-3">
               <span>
                 {godzina(w.start)} · {w.klientka?.imie}
-                {!w.klientka?.telefon && <span className="text-[#8a2f3a]"> (brak telefonu)</span>}
-                {w.status === "oczekuje" && <span className="text-bursztyn"> (niepotwierdzona – SMS wyjdzie po potwierdzeniu)</span>}
+                {w.sms_status === "brak" && !premium && !w.klientka?.email && (
+                  <span className="text-szary"> (brak e-maila)</span>
+                )}
+                {w.status === "oczekuje" && (
+                  <span className="text-bursztyn">
+                    {" "}
+                    (niepotwierdzona – przypomnienie wyjdzie po potwierdzeniu)
+                  </span>
+                )}
               </span>
-              <span className="shrink-0 text-szary">{OPIS_STATUSU[w.sms_status]}</span>
+              <span className="flex shrink-0 items-center gap-2 text-szary">
+                {OPIS_STATUSU[w.sms_status]}
+                {w.klientka?.telefon && w.sms_status !== "wyslany" && (
+                  <WyslijSms
+                    className="min-h-8 px-2.5 text-[13px]"
+                    telefon={w.klientka.telefon}
+                    tresc={trescPrzypomnienia({
+                      imie: w.klientka.imie,
+                      start: w.start,
+                      usluga: w.usluga_nazwa,
+                      salon: s.nazwa,
+                      link: linkWizyty(w.kod),
+                    })}
+                  >
+                    SMS
+                  </WyslijSms>
+                )}
+              </span>
             </li>
           ))}
         </ul>

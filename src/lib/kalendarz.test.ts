@@ -22,6 +22,7 @@ describe("dodawanie do kalendarza", () => {
     expect(ics).toContain("DTSTART:20261107T080000Z\r\n");
     expect(ics).toContain("LOCATION:ul. Wróblewskiego 8\\, 32-600 Oświęcim");
     expect(ics).toContain("TRIGGER:-PT2H");
+    expect(ics).toContain("TRIGGER:-P1D");
     expect(ics.startsWith("BEGIN:VCALENDAR\r\n")).toBe(true);
   });
 });

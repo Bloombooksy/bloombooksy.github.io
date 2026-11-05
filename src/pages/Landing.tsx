@@ -31,7 +31,7 @@ function Hero() {
       <div>
         <h1 className="ld-h1">Papierowy kalendarz zostaw na pamiątkę.</h1>
         <p className="ld-lead mt-6">
-          Bloomly to kalendarz wizyt dla stylistek i salonów: klientki zapisują się same przez Twój link, dostają przypomnienie SMS, a Ty po każdej
+          Bloomly to kalendarz wizyt dla stylistek i salonów: klientki zapisują się same przez Twój link, dostają przypomnienie dzień przed wizytą, a Ty po każdej
           wizycie jednym tapnięciem wpisujesz utarg. Bez prowizji od klientek i bez portalu, który pokazuje im konkurencję.
         </p>
         <div className="mt-8 flex flex-wrap items-start gap-3">
@@ -117,7 +117,7 @@ function Ilustracja() {
 const FUNKCJE = [
   { ikona: Link2, tytul: "Zapisy przez Twój link", opis: "Wklejasz go w bio na Instagramie albo wysyłasz SMS-em. Klientka widzi tylko wolne godziny i sama wybiera termin." },
   { ikona: Wallet, tytul: "Utarg dnia bez liczenia", opis: "Po wizycie stukasz ✓, wpisujesz kwotę i napiwek. Widzisz, ile zarobiłaś dziś, w tym tygodniu i w miesiącu – osobno gotówka, karta i BLIK." },
-  { ikona: BellRing, tytul: "Przypomnienia SMS", opis: `Dzień przed wizytą klientka dostaje SMS z godziną. ${OFERTA.smsWCenie} SMS-ów miesięcznie w cenie.` },
+  { ikona: BellRing, tytul: "Przypomnienia dzień przed", opis: `Mail z godziną i linkiem do odwołania, a SMS z Twojego telefonu jednym tapnięciem. W Premium ${OFERTA.smsWCenie} automatycznych SMS-ów miesięcznie.` },
   { ikona: CalendarPlus, tytul: "Wizyta w kalendarzu klientki", opis: "Po zapisie klientka jednym tapnięciem dodaje wizytę do kalendarza Google lub iPhone’a. Może też sama ją odwołać." },
   { ikona: Users, tytul: "Cały zespół w jednym miejscu", opis: "Każda osoba ma swój grafik i usługi. Dwie stylistki przyjmują o tej samej godzinie, a klientka wybiera, do kogo idzie." },
   { ikona: ShieldCheck, tytul: "Zadatek i koniec z „nie przyszła”", opis: "Nowe albo wybrane klientki wpłacają zadatek BLIK-iem prosto na Twój telefon. Klientkę, która znika bez słowa, blokujesz w zapisach online." },
@@ -232,7 +232,7 @@ function Cennik() {
   const w = [
     "Kalendarz i ekran dnia z utargiem",
     "Zapisy online przez Twój link",
-    `${OFERTA.smsWCenie} przypomnień SMS miesięcznie`,
+    "Przypomnienia mailem i SMS z Twojego telefonu jednym tapnięciem",
     "Zadatki i blokowanie klientek, które nie przychodzą",
     "Strona wizyty dla klientki z dodaniem do kalendarza",
     "Import klientek i podsumowania miesiąca",
@@ -243,7 +243,7 @@ function Cennik() {
       <div className="mx-auto grid max-w-6xl gap-12 px-5 py-20 lg:grid-cols-[1fr_1fr]">
         <div>
           <h2 id="cena" className="ld-h2">
-            Jedna cena. Wszystko w środku.
+            Dwa pakiety. Bez ukrytych opłat.
           </h2>
           <ul className="mt-8 space-y-3">
             {w.map((x) => (
@@ -254,26 +254,38 @@ function Cennik() {
             ))}
           </ul>
         </div>
-        <div className="ld-cena">
-          <p className="text-[16px] font-semibold">Salon z jedną osobą</p>
-          <p className="mt-2 flex items-baseline gap-2">
-            <span className="ld-cena-liczba">{OFERTA.miesiecznie} zł</span>
-            <span className="text-[17px]">miesięcznie</span>
-          </p>
-          <p className="mt-1 text-[16px]">
-            albo <b>{OFERTA.miesiecznie * OFERTA.rokZaMiesiecy} zł za rok</b> – dwa miesiące gratis
-          </p>
-          <hr className="my-6 border-[var(--linia)]" />
+        <div className="space-y-4">
+          <div className="ld-cena">
+            <p className="text-[16px] font-semibold">Start</p>
+            <p className="mt-2 flex items-baseline gap-2">
+              <span className="ld-cena-liczba">{OFERTA.miesiecznie} zł</span>
+              <span className="text-[17px]">miesięcznie</span>
+            </p>
+            <p className="mt-1 text-[16px]">
+              albo <b>{OFERTA.miesiecznie * OFERTA.rokZaMiesiecy} zł za rok</b> – dwa miesiące gratis
+            </p>
+          </div>
+          <div className="ld-cena">
+            <p className="flex items-center gap-2 text-[16px] font-semibold">
+              Premium
+              {OFERTA.premiumWkrotce && <span className="rounded-full bg-[var(--tlo-2)] px-2.5 py-0.5 text-[12px] font-bold text-[var(--malina)]">wkrótce</span>}
+            </p>
+            <p className="mt-2 flex items-baseline gap-2">
+              <span className="ld-cena-liczba">{OFERTA.premium} zł</span>
+              <span className="text-[17px]">miesięcznie</span>
+            </p>
+            <p className="mt-1 text-[16px]">
+              Wszystko ze Startu + <b>{OFERTA.smsWCenie} automatycznych SMS-ów</b> miesięcznie, podpisanych nazwą salonu.
+            </p>
+          </div>
           <p className="text-[16px]">
-            Każda kolejna osoba w zespole: <b>+{OFERTA.zaOsobe} zł</b> miesięcznie.
+            Każda kolejna osoba w zespole: <b>+{OFERTA.zaOsobe} zł</b> miesięcznie. Przeniesienie kalendarza, cennika i klientek za Ciebie:{" "}
+            <b>od {OFERTA.wdrozenieOd} zł</b> jednorazowo.
           </p>
-          <p className="mt-2 text-[16px]">
-            Przeniesienie kalendarza, cennika i klientek za Ciebie: <b>od {OFERTA.wdrozenieOd} zł</b> jednorazowo.
-          </p>
-          <Link to="/logowanie?rejestracja" className="ld-btn ld-btn-malina mt-8 w-full">
+          <Link to="/logowanie?rejestracja" className="ld-btn ld-btn-malina w-full">
             Załóż salon – {OFERTA.probaDni} dni za darmo
           </Link>
-          <p className="mt-3 text-center text-[13px] text-[var(--grafit-2)]">Na okres próbny nie potrzebujesz karty.</p>
+          <p className="text-center text-[13px] text-[var(--grafit-2)]">Na okres próbny nie potrzebujesz karty.</p>
         </div>
       </div>
     </section>

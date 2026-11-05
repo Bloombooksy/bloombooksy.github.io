@@ -45,3 +45,13 @@ export function trescProsbyOOpinie(imie: string, salon: string, link: string): s
   const i = pierwsze(imie);
   return `${i ? `Dziękuję za wizytę, ${i}!` : "Dziękuję za wizytę!"} Będzie mi bardzo miło, jeśli zostawisz krótką opinię – to bardzo pomaga ${salon}: ${link}`;
 }
+
+/** Ręczne przypomnienie (SMS z telefonu salonu) o jutrzejszej wizycie. */
+export function trescPrzypomnienia(w: { imie: string; start: string; usluga: string; salon: string; link: string }): string {
+  const d = dzienKey(w.start);
+  const i = pierwsze(w.imie);
+  return (
+    `${i ? `Hej ${i}! ` : ""}Przypominam o wizycie jutro (${DNI_KROTKO[dzienTygodnia(d)]} ${krotkaData(d)}), godz. ${godzina(w.start)}` +
+    `${w.usluga ? ` – ${w.usluga}` : ""}. Szczegóły i odwołanie: ${w.link} ${w.salon}`
+  );
+}

@@ -17,7 +17,7 @@ import { dodajDni, wStrefie } from "./czas";
 
 type Tabele = Database["public"]["Tables"];
 
-export type WizytaZKlientka = WizytaRow & { klientka: Pick<KlientkaRow, "id" | "imie" | "telefon" | "instagram" | "prosba_o_opinie" | "zablokowana"> | null };
+export type WizytaZKlientka = WizytaRow & { klientka: Pick<KlientkaRow, "id" | "imie" | "telefon" | "email" | "instagram" | "prosba_o_opinie" | "zablokowana"> | null };
 
 function ok<T>(r: { data: T | null; error: unknown }): T {
   if (r.error) throw r.error;
@@ -33,6 +33,31 @@ export function useKontekst() {
     queryFn: async () => ok<Kontekst | null>((await supabase.rpc("moj_kontekst")) as { data: Kontekst | null; error: unknown }),
     staleTime: 5 * 60_000,
   });
+}
+
+export type StanPakietu = {
+  pakiet: "start" | "premium";
+  proba_do: string;
+  oplacone_do: string | null;
+  aktywny: boolean;
+  sms_limit: number;
+  sms_w_miesiacu: number;
+  regulamin_wersja: string | null;
+  regulamin_akceptacja: string | null;
+};
+
+/** Pakiet salonu, okres próbny, licznik SMS i akceptacja regulaminu. */
+export function usePakiet() {
+  return useQuery({
+    queryKey: ["pakiet"],
+    queryFn: async () => ok<StanPakietu | null>((await supabase.rpc("moj_pakiet")) as { data: StanPakietu | null; error: unknown }),
+    staleTime: 5 * 60_000,
+  });
+}
+
+/** Ile pełnych dni zostało do daty (0 = dziś mija, ujemne = minęło). */
+export function dniDo(iso: string, teraz = Date.now()): number {
+  return Math.ceil((new Date(iso).getTime() - teraz) / 86_400_000);
 }
 
 export function useSalon() {
@@ -119,7 +144,7 @@ export function usePrzerwy(od: string, doDnia: string) {
   });
 }
 
-const WIZYTA_SELECT = "*, klientka:klientki(id, imie, telefon, instagram, prosba_o_opinie, zablokowana)";
+const WIZYTA_SELECT = "*, klientka:klientki(id, imie, telefon, email, instagram, prosba_o_opinie, zablokowana)";
 
 /** Wizyty z zakresu dni (włącznie). */
 export function useWizyty(od: string, doDnia: string) {

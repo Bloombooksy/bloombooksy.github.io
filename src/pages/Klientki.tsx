@@ -77,6 +77,7 @@ function KlientkaModal({ k, onClose }: { k: KlientkaRow | null; onClose: () => v
   const [f, setF] = useState({
     imie: k?.imie ?? "",
     telefon: k?.telefon ?? "",
+    email: k?.email ?? "",
     instagram: k?.instagram ?? "",
     notatka: k?.notatka ?? "",
     zgoda_sms: k?.zgoda_sms ?? true,
@@ -89,7 +90,8 @@ function KlientkaModal({ k, onClose }: { k: KlientkaRow | null; onClose: () => v
   async function zapisz(e: React.FormEvent) {
     e.preventDefault();
     if (f.telefon && !normalizujTelefon(f.telefon)) return setBlad("Sprawdź numer telefonu.");
-    const row = { ...f, imie: f.imie.trim(), instagram: f.instagram.trim().replace(/^@/, "") };
+    if (f.email.trim() && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email.trim())) return setBlad("Sprawdź adres e-mail.");
+    const row = { ...f, imie: f.imie.trim(), email: f.email.trim().toLowerCase(), instagram: f.instagram.trim().replace(/^@/, "") };
     try {
       if (k) await api.zmien.mutateAsync({ id: k.id, ...row });
       else await api.dodaj.mutateAsync({ ...row, salon_id: salonId });
@@ -165,6 +167,12 @@ function KlientkaModal({ k, onClose }: { k: KlientkaRow | null; onClose: () => v
             </label>
             <input id="k-ig" className="pole" placeholder="@nazwa" value={f.instagram} onChange={(e) => setF({ ...f, instagram: e.target.value })} />
           </div>
+        </div>
+        <div>
+          <label className="etykieta" htmlFor="k-e">
+            E-mail (przypomnienia o wizytach)
+          </label>
+          <input id="k-e" type="email" inputMode="email" className="pole" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} />
         </div>
         <div>
           <label className="etykieta" htmlFor="k-n">

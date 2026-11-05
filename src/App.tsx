@@ -14,6 +14,7 @@ const Uslugi = lazy(() => import("./pages/Uslugi"));
 const Godziny = lazy(() => import("./pages/Godziny"));
 const Link = lazy(() => import("./pages/LinkZapisow"));
 const Sms = lazy(() => import("./pages/Sms"));
+const Pakiet = lazy(() => import("./pages/Pakiet"));
 const Podsumowanie = lazy(() => import("./pages/Podsumowanie"));
 const Zapisy = lazy(() => import("./pages/Zapisy"));
 const Landing = lazy(() => import("./pages/Landing"));
@@ -57,6 +58,7 @@ function Panel() {
           <Route path="godziny" element={<Godziny />} />
           <Route path="link" element={<Link />} />
           <Route path="sms" element={<Sms />} />
+          <Route path="pakiet" element={<Pakiet />} />
           <Route path="zespol" element={<Zespol />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
