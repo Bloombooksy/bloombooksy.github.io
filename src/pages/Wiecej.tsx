@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { DEMO } from "../lib/oferta";
 import { Link } from "react-router-dom";
 import { ZmianaHasla } from "../components/ZmianaHasla";
-import { BarChart3, BellRing, ChevronRight, Clock, Gem, KeyRound, Link2, LogOut, Sparkles, Users } from "lucide-react";
+import { BarChart3, BellRing, ChevronRight, Clock, Database, Gem, KeyRound, Link2, LogOut, Sparkles, Users } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useCzyWlascicielka, useSalon } from "../lib/dane";
 
@@ -14,6 +14,7 @@ const POZYCJE = [
   { to: "/link", txt: "Zapisy online", opis: "Link dla klientek, adres, wygląd", ikona: Link2 },
   { to: "/sms", txt: "Przypomnienia", opis: "Mail lub SMS dzień przed wizytą", ikona: BellRing },
   { to: "/pakiet", txt: "Pakiet i płatność", opis: "Okres próbny, pakiet Start lub Premium", ikona: Gem },
+  { to: "/dane", txt: "Twoje dane", opis: "Pobierz klientki i wizyty, usuń salon", ikona: Database },
 ];
 
 export default function Wiecej() {

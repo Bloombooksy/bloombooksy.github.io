@@ -17,6 +17,7 @@ type Info = {
   zadatek?: number | null;
   zadatek_wplacony?: boolean;
   zadatek_instrukcja?: string | null;
+  info?: string;
   adres: string;
   telefon: string;
   usluga: string;
@@ -31,7 +32,7 @@ type Info = {
 
 const STAN: Record<StatusWizyty, { txt: string; opis: string; cls: string; ikona: typeof Clock }> = {
   oczekuje: { txt: "Czeka na potwierdzenie", opis: "Dam znać, gdy potwierdzę termin. Ta strona też się zaktualizuje.", cls: "bg-bursztyn-jasny text-bursztyn", ikona: Hourglass },
-  potwierdzona: { txt: "Wizyta potwierdzona", opis: "Do zobaczenia! Dzień wcześniej przypomnę Ci SMS-em.", cls: "bg-ziel-jasny text-ziel", ikona: CalendarCheck2 },
+  potwierdzona: { txt: "Wizyta potwierdzona", opis: "Do zobaczenia! Dzień wcześniej dostaniesz przypomnienie.", cls: "bg-ziel-jasny text-ziel", ikona: CalendarCheck2 },
   zrealizowana: { txt: "Wizyta odbyła się", opis: "Dziękuję i zapraszam ponownie!", cls: "bg-piasek text-mokka", ikona: CalendarCheck2 },
   odwolana: { txt: "Wizyta odwołana", opis: "Ten termin jest już wolny.", cls: "bg-roz-jasny text-[#8a2f3a]", ikona: CalendarX2 },
   nieobecnosc: { txt: "Wizyta się nie odbyła", opis: "Jeśli to pomyłka – zadzwoń.", cls: "bg-roz-jasny text-[#8a2f3a]", ikona: CalendarX2 },
@@ -128,6 +129,13 @@ export default function MojaWizyta() {
         </div>
       </section>
 
+      {aktualna && w.info && (
+        <section className="karta p-4">
+          <p className="text-[13px] font-bold text-szary">Od salonu</p>
+          <p className="mt-1 whitespace-pre-line text-[15px]">{w.info}</p>
+        </section>
+      )}
+
       {aktualna && w.zadatek != null && (
         <section className={`rounded-2xl p-4 ${w.zadatek_wplacony ? "bg-ziel-jasny text-ziel" : "border border-bursztyn/30 bg-bursztyn-jasny text-bursztyn"}`}>
           {w.zadatek_wplacony ? (
@@ -155,7 +163,7 @@ export default function MojaWizyta() {
               iPhone / Outlook
             </button>
           </div>
-          <p className="text-[13px] text-szary">Telefon przypomni Ci o wizycie 2 godziny wcześniej.</p>
+          <p className="text-[13px] text-szary">Telefon przypomni Ci o wizycie dzień wcześniej i 2 godziny przed.</p>
         </section>
       )}
 

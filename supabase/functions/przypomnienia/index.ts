@@ -45,7 +45,7 @@ type Wiersz = {
   sms_limit: number; sms_w_miesiacu: number; imie: string; telefon: string; zgoda: boolean; email: string;
 };
 
-function trescMaila(w: Wiersz) {
+function trescMaila(w: Wiersz, info = "") {
   const { dataPelna, godzina } = czesci(w.start, w.strefa);
   const imie = w.imie.trim().split(/\s+/)[0] ?? "";
   const kolor = /^#[0-9a-f]{6}$/i.test(w.kolor) ? w.kolor : "#c2185b";
@@ -57,6 +57,7 @@ function trescMaila(w: Wiersz) {
     w.adres ? `Adres: ${w.adres}` : "",
     `Szczegóły i odwołanie: ${link}`,
     w.salon_telefon ? `Telefon do salonu: ${w.salon_telefon}` : "",
+    info ? `\nOd salonu: ${info}` : "",
   ].filter(Boolean).join("\n");
   const body = `<div style="background:#fdf8f8;padding:28px 14px;font-family:Arial,Helvetica,sans-serif;color:#1f1d2b">
   <div style="max-width:480px;margin:0 auto;background:#fff;border-radius:20px;padding:28px 26px;border-top:6px solid ${kolor}">
@@ -66,6 +67,7 @@ function trescMaila(w: Wiersz) {
     <p style="margin:0 0 4px;font-size:16px">${html(dataPelna)}</p>
     <p style="margin:0 0 18px;font-size:16px;color:#4a4757">${html(w.usluga)}</p>
     ${w.adres ? `<p style="margin:0 0 18px;font-size:15px;color:#4a4757">📍 ${html(w.adres)}</p>` : ""}
+    ${info ? `<p style="margin:0 0 18px;padding:12px 14px;border-radius:12px;background:#fdf8f8;font-size:15px;line-height:1.5;color:#1f1d2b;white-space:pre-line">${html(info)}</p>` : ""}
     <a href="${link}" style="display:inline-block;background:${kolor};color:#fff;text-decoration:none;font-weight:bold;font-size:16px;padding:13px 24px;border-radius:999px">Szczegóły wizyty</a>
     <p style="margin:22px 0 0;font-size:13px;line-height:1.5;color:#8a8796">Nie możesz przyjść? Odwołaj wizytę pod tym samym linkiem${w.salon_telefon ? ` albo zadzwoń: ${html(w.salon_telefon)}` : ""}.</p>
   </div>
@@ -87,6 +89,12 @@ Deno.serve(async (req) => {
   if (error) return Response.json({ blad: error.message }, { status: 500 });
 
   const wynik = { sms: 0, mail: 0, test: 0, pominiete: 0, bledy: 0 };
+  const salonIds = [...new Set(((data ?? []) as Wiersz[]).map((w) => w.salon_id))];
+  const infoSalonu: Record<string, string> = {};
+  if (salonIds.length) {
+    const { data: inf } = await db.from("salony").select("id, info_dla_klientki").in("id", salonIds);
+    for (const x of inf ?? []) infoSalonu[x.id] = x.info_dla_klientki ?? "";
+  }
   const wyslaneSms: Record<string, number> = {};
 
   for (const w of (data ?? []) as Wiersz[]) {
@@ -136,7 +144,7 @@ Deno.serve(async (req) => {
 
     // 2) Mail (pakiet Start albo po wyczerpaniu limitu SMS)
     if (w.email) {
-      const m = trescMaila(w);
+      const m = trescMaila(w, infoSalonu[w.salon_id]);
       if (!resendKey) {
         console.log(`[test mail] ${w.email}: ${m.temat}`);
         await oznacz("test", "mail w trybie testowym");

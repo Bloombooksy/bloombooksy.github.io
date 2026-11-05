@@ -21,6 +21,7 @@ export default function LinkZapisow() {
   const [kwota, setKwota] = useState("");
   const [instrukcja, setInstrukcja] = useState("");
   const [opinie, setOpinie] = useState("");
+  const [info, setInfo] = useState("");
   const [skopiowano, setSkopiowano] = useState(false);
   const [blad, setBlad] = useState("");
   useEffect(() => {
@@ -31,7 +32,8 @@ export default function LinkZapisow() {
     setKwota(s?.zadatek_kwota ? String(s.zadatek_kwota) : "");
     setInstrukcja(s?.zadatek_instrukcja ?? "");
     setOpinie(s?.link_opinii ?? "");
-  }, [s?.nazwa, s?.adres, s?.telefon, s?.slug]);
+    setInfo(s?.info_dla_klientki ?? "");
+  }, [s?.nazwa, s?.adres, s?.telefon, s?.slug, s?.link_opinii, s?.info_dla_klientki]);
   if (!s) return null;
   const link = linkZapisow(s.slug ?? s.zapisy_token);
   const tekst = `Hej! Tu możesz sama zapisać się do mnie na paznokcie 💅 ${link}`;
@@ -214,6 +216,22 @@ export default function LinkZapisow() {
           </label>
         </div>
         {Number(s.zadatek_kwota) > 0 && !s.zadatek_instrukcja && <p className="text-[13px] font-semibold text-bursztyn">Wpisz, jak wpłacić – inaczej klientka nie będzie wiedziała, gdzie przelać.</p>}
+      </div>
+
+      <div className="karta space-y-3 p-4">
+        <h2 className="font-bold">Informacja dla klientki</h2>
+        <p className="text-[14px] text-szary">
+          Pokaże się na stronie wizyty i w mailu z przypomnieniem. Np. gdzie zaparkować, jak wejść, czy przyjść bez lakieru.
+        </p>
+        <textarea
+          className="pole min-h-24"
+          maxLength={500}
+          placeholder="Np. Parking za budynkiem, wejście od podwórza, 1. piętro. Proszę przyjść bez lakieru."
+          value={info}
+          onChange={(e) => setInfo(e.target.value)}
+          onBlur={() => info.trim() !== s.info_dla_klientki && ustaw({ info_dla_klientki: info.trim() })}
+        />
+        <p className="text-right text-[12px] text-szary">{info.length}/500</p>
       </div>
 
       <div className="karta space-y-3 p-4">

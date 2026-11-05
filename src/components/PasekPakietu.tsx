@@ -66,7 +66,12 @@ export function PasekPakietu({ demo }: { demo: boolean }) {
           </button>
         </div>
       )}
-      {!p.aktywny ? (
+      {p.do_usuniecia ? (
+        <Link to="/dane" className="block rounded-2xl bg-[#fbebeb] px-4 py-3 text-[14px] text-[#8a2f3a]">
+          <b>Salon zostanie usunięty {new Date(p.do_usuniecia).toLocaleDateString("pl-PL", { day: "numeric", month: "long" })}.</b> Zapisy online są
+          wyłączone. <span className="font-bold underline">Cofnij lub pobierz dane</span>
+        </Link>
+      ) : !p.aktywny ? (
         <Link to="/pakiet" className="block rounded-2xl bg-[#fbebeb] px-4 py-3 text-[14px] text-[#8a2f3a]">
           <b>{proba ? "Okres próbny się skończył." : "Opłacony okres się skończył."}</b> Twoje dane są bezpieczne, ale nowych wizyt nie dodasz.{" "}
           <span className="font-bold underline">Zobacz pakiety</span>

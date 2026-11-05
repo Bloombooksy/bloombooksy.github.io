@@ -31,6 +31,8 @@ type Salon = {
   sms_limit: number;
   regulamin_wersja: string | null;
   regulamin_akceptacja: string | null;
+  info_dla_klientki: string;
+  do_usuniecia: string | null;
 };
 
 export type Pakiet = "start" | "premium";
@@ -176,6 +178,8 @@ export type Database = {
       };
       moj_pakiet: { Args: never; Returns: Json };
       akceptuj_regulamin: { Args: { p_wersja: string }; Returns: undefined };
+      usun_salon: { Args: { p_nazwa: string }; Returns: string };
+      anuluj_usuniecie: { Args: never; Returns: undefined };
     };
     Enums: {
       platnosc: Platnosc;

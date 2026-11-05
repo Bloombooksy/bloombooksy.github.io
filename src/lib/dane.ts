@@ -44,6 +44,7 @@ export type StanPakietu = {
   sms_w_miesiacu: number;
   regulamin_wersja: string | null;
   regulamin_akceptacja: string | null;
+  do_usuniecia: string | null;
 };
 
 /** Pakiet salonu, okres próbny, licznik SMS i akceptacja regulaminu. */
