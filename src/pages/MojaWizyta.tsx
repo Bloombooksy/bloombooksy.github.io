@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarCheck2, CalendarPlus, CalendarX2, Clock, Hourglass, MapPin, Phone } from "lucide-react";
@@ -46,6 +46,12 @@ export default function MojaWizyta() {
   const qc = useQueryClient();
   const [blad, setBlad] = useState("");
   const [odwoluje, setOdwoluje] = useState(false);
+  const wypisz = params.has("wypisz");
+  const [wypisana, setWypisana] = useState(false);
+  useEffect(() => {
+    if (!wypisz || !kod) return;
+    supabase.rpc("powrot_wypisz", { p_kod: kod }).then(({ data }) => setWypisana(!!data));
+  }, [wypisz, kod]);
   const { data: w, isLoading } = useQuery({
     queryKey: ["wizyta", kod],
     queryFn: async () => {
@@ -128,6 +134,12 @@ export default function MojaWizyta() {
           )}
         </div>
       </section>
+
+      {wypisz && (
+        <p className="rounded-2xl bg-ziel-jasny p-4 text-[15px] text-ziel">
+          {wypisana ? "Gotowe – nie będziemy już przypominać o kolejnej wizycie. Przypomnienia o umówionych wizytach dostaniesz jak dotąd." : "Wypisuję…"}
+        </p>
+      )}
 
       {aktualna && w.info && (
         <section className="karta p-4">

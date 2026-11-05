@@ -55,3 +55,9 @@ export function trescPrzypomnienia(w: { imie: string; start: string; usluga: str
     `${w.usluga ? ` – ${w.usluga}` : ""}. Szczegóły i odwołanie: ${w.link} ${w.salon}`
   );
 }
+
+/** Zaproszenie na kolejną wizytę (SMS z telefonu salonu). */
+export function trescPowrotu(imie: string, salon: string, link: string): string {
+  const i = pierwsze(imie);
+  return `${i ? `Hej ${i}! ` : "Hej! "}Czas na kolejną wizytę? Wolne terminy w ${salon} wybierzesz tutaj: ${link}`;
+}

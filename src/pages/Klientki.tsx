@@ -1,8 +1,11 @@
 import { useMemo, useState } from "react";
-import { AtSign, FileUp, Phone, Plus, Search, Users } from "lucide-react";
+import { AlertTriangle, AtSign, Check, FileUp, Phone, Plus, Repeat, Search, Users } from "lucide-react";
 import { ImportKlientek } from "../components/ImportKlientek";
-import { useHistoriaKlientki, useKlientki, useSalon, useSalonId, useZapis } from "../lib/dane";
-import { linkZapisow, trescZaproszenia } from "../lib/wiadomosci";
+import { usePowroty, useHistoriaKlientki, useKlientki, useSalon, useSalonId, useZapis } from "../lib/dane";
+import { ZdjeciaKlientki } from "../components/ZdjeciaKlientki";
+import { supabase } from "../lib/supabase";
+import { useQueryClient } from "@tanstack/react-query";
+import { linkZapisow, trescPowrotu, trescZaproszenia } from "../lib/wiadomosci";
 import { WyslijSms } from "../components/WyslijSms";
 import type { KlientkaRow } from "../lib/database.types";
 import { dzienKey, godzina, krotkaData } from "../lib/czas";
@@ -36,6 +39,7 @@ export default function Klientki() {
           </button>
         </div>
       </div>
+      <Powroty />
       <label className="relative block">
         <Search className="pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2 text-szary" />
         <input className="pole pl-11" placeholder={`Szukaj wśród ${data.length} klientek`} value={q} onChange={(e) => setQ(e.target.value)} />
@@ -54,6 +58,7 @@ export default function Klientki() {
                   <span className="flex items-center gap-2">
                     <span className="truncate font-bold">{k.imie}</span>
                     {k.zablokowana && <span className="shrink-0 rounded-full bg-roz-jasny px-2 py-0.5 text-[11px] font-bold text-[#8a2f3a]">zablokowana</span>}
+                    {k.alergie && <span className="shrink-0 rounded-full bg-bursztyn-jasny px-2 py-0.5 text-[11px] font-bold text-bursztyn">uwaga</span>}
                     {!k.zablokowana && k.wymaga_zadatku && <span className="shrink-0 rounded-full bg-bursztyn-jasny px-2 py-0.5 text-[11px] font-bold text-bursztyn">zadatek</span>}
                   </span>
                   <span className="block truncate text-[13px] text-szary">{[k.telefon && ladnyTelefon(k.telefon), k.instagram && `@${k.instagram.replace(/^@/, "")}`].filter(Boolean).join(" · ") || "brak kontaktu"}</span>
@@ -83,6 +88,8 @@ function KlientkaModal({ k, onClose }: { k: KlientkaRow | null; onClose: () => v
     zgoda_sms: k?.zgoda_sms ?? true,
     wymaga_zadatku: k?.wymaga_zadatku ?? false,
     zablokowana: k?.zablokowana ?? false,
+    alergie: k?.alergie ?? "",
+    zgoda_powrot: k?.zgoda_powrot ?? false,
   });
   const [blad, setBlad] = useState("");
   const p = podsumuj(historia);
@@ -91,7 +98,7 @@ function KlientkaModal({ k, onClose }: { k: KlientkaRow | null; onClose: () => v
     e.preventDefault();
     if (f.telefon && !normalizujTelefon(f.telefon)) return setBlad("Sprawdź numer telefonu.");
     if (f.email.trim() && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email.trim())) return setBlad("Sprawdź adres e-mail.");
-    const row = { ...f, imie: f.imie.trim(), email: f.email.trim().toLowerCase(), instagram: f.instagram.trim().replace(/^@/, "") };
+    const row = { ...f, alergie: f.alergie.trim(), imie: f.imie.trim(), email: f.email.trim().toLowerCase(), instagram: f.instagram.trim().replace(/^@/, "") };
     try {
       if (k) await api.zmien.mutateAsync({ id: k.id, ...row });
       else await api.dodaj.mutateAsync({ ...row, salon_id: salonId });
@@ -175,12 +182,24 @@ function KlientkaModal({ k, onClose }: { k: KlientkaRow | null; onClose: () => v
           <input id="k-e" type="email" inputMode="email" className="pole" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} />
         </div>
         <div>
+          <label className="etykieta flex items-center gap-1.5" htmlFor="k-a">
+            <AlertTriangle className="size-4 text-bursztyn" /> Alergie i przeciwwskazania
+          </label>
+          <input id="k-a" maxLength={300} className="pole" placeholder="np. uczulenie na HEMA, cukrzyca" value={f.alergie} onChange={(e) => setF({ ...f, alergie: e.target.value })} />
+        </div>
+        <div>
           <label className="etykieta" htmlFor="k-n">
             Notatka
           </label>
           <textarea id="k-n" rows={2} className="pole resize-none" placeholder="np. ulubiony kolor, alergie, kształt" value={f.notatka} onChange={(e) => setF({ ...f, notatka: e.target.value })} />
         </div>
         <Przelacznik wl={f.zgoda_sms} onZmien={(v) => setF({ ...f, zgoda_sms: v })} etykieta="Przypomnienia SMS" opis="SMS dzień przed wizytą" />
+        <Przelacznik
+          wl={f.zgoda_powrot}
+          onZmien={(v) => setF({ ...f, zgoda_powrot: v })}
+          etykieta="Zgoda na mail „Czas na kolejną wizytę”"
+          opis="Włącz tylko, jeśli klientka się na to zgodziła (np. przy zapisie online albo osobiście)"
+        />
         {k && p.nieobecne >= 2 && !f.zablokowana && !f.wymaga_zadatku && (
           <p className="rounded-xl bg-roz-jasny px-3.5 py-2.5 text-[14px] text-[#8a2f3a]">
             Nie przyszła już {p.nieobecne} razy. Możesz wymagać od niej zadatku albo zablokować jej zapisy online.
@@ -199,6 +218,8 @@ function KlientkaModal({ k, onClose }: { k: KlientkaRow | null; onClose: () => v
           opis="Strona zapisów poprosi ją o telefon do salonu. Ty nadal możesz wpisać jej wizytę."
         />
         <Blad>{blad}</Blad>
+
+        {k && salonId && <ZdjeciaKlientki salonId={salonId} klientkaId={k.id} />}
 
         {k && historia.length > 0 && (
           <section className="border-t border-linia pt-4">
@@ -221,5 +242,61 @@ function KlientkaModal({ k, onClose }: { k: KlientkaRow | null; onClose: () => v
         )}
       </form>
     </Modal>
+  );
+}
+
+/** Klientki, którym minął zwykły czas do kolejnej wizyty – zaproszenie SMS-em jednym kliknięciem. */
+function Powroty() {
+  const { data: lista = [] } = usePowroty();
+  const { data: salon } = useSalon();
+  const qc = useQueryClient();
+  const [rozwin, setRozwin] = useState(false);
+  if (!lista.length || !salon) return null;
+
+  async function oznacz(id: string) {
+    await supabase.from("klientki").update({ powrot_wyslano: new Date().toISOString() }).eq("id", id);
+    await qc.invalidateQueries({ queryKey: ["powroty"] });
+  }
+
+  const widoczne = rozwin ? lista : lista.slice(0, 3);
+  return (
+    <section className="karta p-4">
+      <h2 className="flex items-center gap-2 font-bold">
+        <Repeat className="size-5 text-mokka" /> Czas na kolejną wizytę ({lista.length})
+      </h2>
+      <p className="mt-1 text-[13px] text-szary">Minął ich zwykły czas od ostatniej usługi, a nie mają nic zaplanowanego.</p>
+      <ul className="mt-3 divide-y divide-linia">
+        {widoczne.map((p) => {
+          const tygodnie = Math.max(1, Math.round((Date.now() - new Date(p.ostatnia).getTime()) / (7 * 86_400_000)));
+          return (
+            <li key={p.klientka_id} className="flex items-center justify-between gap-2 py-2.5">
+              <span className="min-w-0">
+                <span className="block truncate font-semibold">{p.imie}</span>
+                <span className="block truncate text-[13px] text-szary">
+                  {p.usluga} · {tygodnie} tyg. temu{p.zgoda && p.email ? " · dostanie mail" : ""}
+                </span>
+              </span>
+              <span className="flex shrink-0 gap-1.5">
+                {p.telefon && salon.zapisy_wlaczone && (
+                  <span onClickCapture={() => setTimeout(() => oznacz(p.klientka_id), 500)}>
+                    <WyslijSms className="min-h-9 px-3 text-[13px]" telefon={p.telefon} tresc={trescPowrotu(p.imie, salon.nazwa, linkZapisow(salon.slug || salon.zapisy_token, { imie: p.imie, telefon: p.telefon }))}>
+                      SMS
+                    </WyslijSms>
+                  </span>
+                )}
+                <button className="btn-jasny min-h-9 px-2.5" aria-label={`Oznacz ${p.imie} jako zaproszoną`} title="Już zaproszona" onClick={() => oznacz(p.klientka_id)}>
+                  <Check className="size-4" />
+                </button>
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+      {lista.length > 3 && (
+        <button className="btn-cichy mt-1 w-full text-[14px]" onClick={() => setRozwin(!rozwin)}>
+          {rozwin ? "Zwiń" : `Pokaż wszystkie (${lista.length})`}
+        </button>
+      )}
+    </section>
   );
 }

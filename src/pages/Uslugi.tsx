@@ -79,6 +79,7 @@ function UslugaModal({ u, kolejnosc, onClose }: { u: UslugaRow | null; kolejnosc
     kolor: u?.kolor ?? KOLORY[kolejnosc % KOLORY.length]!,
     aktywna: u?.aktywna ?? true,
     w_zapisach: u?.w_zapisach ?? true,
+    powrot_dni: u ? u.powrot_dni : null,
   });
   const [blad, setBlad] = useState("");
 
@@ -140,6 +141,20 @@ function UslugaModal({ u, kolejnosc, onClose }: { u: UslugaRow | null; kolejnosc
               />
             ))}
           </div>
+        </div>
+        <div>
+          <label className="etykieta" htmlFor="u-pw">
+            Kolejna wizyta zwykle po
+          </label>
+          <select id="u-pw" className="pole" value={f.powrot_dni ?? ""} onChange={(e) => setF({ ...f, powrot_dni: e.target.value ? +e.target.value : null })}>
+            <option value="">nie przypominaj</option>
+            {[14, 21, 28, 35, 42, 56, 84].map((d) => (
+              <option key={d} value={d}>
+                {d / 7} tygodniach
+              </option>
+            ))}
+          </select>
+          <p className="mt-1 text-[13px] text-szary">Po tym czasie klientka trafi na listę „Czas na kolejną wizytę”, a jeśli się zgodziła – dostanie mail z linkiem do zapisów.</p>
         </div>
         <Przelacznik wl={f.w_zapisach} onZmien={(v) => setF({ ...f, w_zapisach: v })} etykieta="Widoczna w zapisach przez link" opis="Znajome mogą ją wybrać same" />
         <Przelacznik wl={f.aktywna} onZmien={(v) => setF({ ...f, aktywna: v })} etykieta="Aktywna" opis="Wyłącz, jeśli już jej nie robisz – historia zostaje" />

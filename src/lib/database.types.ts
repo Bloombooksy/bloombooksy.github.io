@@ -33,6 +33,7 @@ type Salon = {
   regulamin_akceptacja: string | null;
   info_dla_klientki: string;
   do_usuniecia: string | null;
+  powrot_wlaczony: boolean;
 };
 
 export type Pakiet = "start" | "premium";
@@ -108,6 +109,9 @@ type Klientka = {
   wymaga_zadatku: boolean;
   prosba_o_opinie: string | null;
   email: string;
+  zgoda_powrot: boolean;
+  powrot_wyslano: string | null;
+  alergie: string;
 };
 
 type Usluga = {
@@ -121,6 +125,17 @@ type Usluga = {
   nazwa: string;
   salon_id: string;
   w_zapisach: boolean;
+  powrot_dni: number | null;
+};
+
+type Zdjecie = {
+  id: string;
+  salon_id: string;
+  klientka_id: string;
+  wizyta_id: string | null;
+  sciezka: string;
+  opis: string;
+  created_at: string;
 };
 
 type GodzinyPracy = { do_godz: string; dzien: number; od_godz: string; salon_id: string };
@@ -146,6 +161,7 @@ export type Database = {
       pracownicy: T<Pracownik, "imie" | "salon_id">;
       uslugi_pracownicy: T<UslugaPracownik, "usluga_id" | "pracownik_id">;
       godziny_pracownikow: T<GodzinyPracownika, "pracownik_id" | "dzien" | "od_godz" | "do_godz">;
+      zdjecia: T<Zdjecie, "salon_id" | "klientka_id" | "sciezka">;
     };
     Views: { [_ in never]: never };
     Functions: {
@@ -180,6 +196,15 @@ export type Database = {
       akceptuj_regulamin: { Args: { p_wersja: string }; Returns: undefined };
       usun_salon: { Args: { p_nazwa: string }; Returns: string };
       anuluj_usuniecie: { Args: never; Returns: undefined };
+      moje_powroty: { Args: never; Returns: Json[] };
+      powrot_wypisz: { Args: { p_kod: string }; Returns: boolean };
+      zapisy_rezerwuj_v4: {
+        Args: {
+          p_token: string; p_usluga: string; p_start: string; p_imie: string; p_telefon: string;
+          p_notatka?: string; p_pracownik?: string | null; p_email?: string; p_zgoda_powrot?: boolean;
+        };
+        Returns: Json;
+      };
     };
     Enums: {
       platnosc: Platnosc;
@@ -200,3 +225,4 @@ export type PrzerwaRow = Przerwa;
 export type PracownikRow = Pracownik;
 export type UslugaPracownikRow = UslugaPracownik;
 export type GodzinyPracownikaRow = GodzinyPracownika;
+export type ZdjecieRow = Zdjecie;

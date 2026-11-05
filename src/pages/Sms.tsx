@@ -107,6 +107,12 @@ export default function Sms() {
               : "Dzień przed wizytą: mail do klientek z adresem e-mail"
           }
         />
+        <Przelacznik
+          wl={s.powrot_wlaczony}
+          onZmien={(v) => ustaw({ powrot_wlaczony: v })}
+          etykieta="„Czas na kolejną wizytę” mailem"
+          opis="Po zwykłym czasie od usługi (ustawiasz w Usługach) – tylko do klientek, które się na to zgodziły"
+        />
         <label className="block">
           <span className="etykieta">Godzina wysyłki (dzień wcześniej)</span>
           <select

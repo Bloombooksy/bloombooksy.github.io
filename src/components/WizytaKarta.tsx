@@ -42,6 +42,11 @@ export function WizytaKarta({
             ) : (
               w.status !== "potwierdzona" && <Status s={w.status} />
             )}
+            {w.klientka?.alergie && (
+              <span className="max-w-full truncate rounded-full bg-bursztyn-jasny px-2.5 py-1 text-[12px] font-bold text-bursztyn" title={w.klientka.alergie}>
+                ⚠ {w.klientka.alergie}
+              </span>
+            )}
           </div>
           <div className="mt-0.5 flex items-center gap-2 truncate text-[14px] text-szary">
             {osoba && (

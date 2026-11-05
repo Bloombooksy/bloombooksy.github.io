@@ -76,6 +76,38 @@ function trescMaila(w: Wiersz, info = "") {
   return { temat, tekst, body };
 }
 
+type Powrot = {
+  klientka_id: string; salon_id: string; salon: string; kolor: string; info: string; link: string;
+  imie: string; email: string; usluga: string; ostatnia: string; strefa: string; kod: string;
+};
+
+function trescPowrotu(p: Powrot) {
+  const imie = p.imie.trim().split(/\s+/)[0] ?? "";
+  const kolor = /^#[0-9a-f]{6}$/i.test(p.kolor) ? p.kolor : "#c2185b";
+  const t = Math.max(1, Math.round((Date.now() - new Date(p.ostatnia).getTime()) / (7 * 86_400_000)));
+  const ile = t === 1 ? "Minął tydzień" : t < 5 ? `Minęły ${t} tygodnie` : `Minęło ${t} tygodni`;
+  const link = `${APP}/#/zapisy/${encodeURIComponent(p.link)}`;
+  const wypisz = `${APP}/#/wizyta/${p.kod}?wypisz`;
+  const temat = `Czas na kolejną wizytę? – ${p.salon}`;
+  const tekst = [
+    `Cześć${imie ? ` ${imie}` : ""}!`,
+    `${ile} od Twojej ostatniej wizyty (${p.usluga}) w ${p.salon}.`,
+    `Wybierz kolejny termin: ${link}`,
+    "",
+    `Nie chcesz takich przypomnień? ${wypisz}`,
+  ].join("\n");
+  const body = `<div style="background:#fdf8f8;padding:28px 14px;font-family:Arial,Helvetica,sans-serif;color:#1f1d2b">
+  <div style="max-width:480px;margin:0 auto;background:#fff;border-radius:20px;padding:28px 26px;border-top:6px solid ${kolor}">
+    <p style="margin:0 0 6px;font-size:14px;color:#8a8796">${html(p.salon)}</p>
+    <h1 style="margin:0 0 14px;font-size:22px;line-height:1.3">Czas na kolejną wizytę${imie ? `, ${html(imie)}` : ""}?</h1>
+    <p style="margin:0 0 20px;font-size:16px;line-height:1.5;color:#4a4757">${ile} od Twojej ostatniej wizyty: <b>${html(p.usluga)}</b>. Wolne terminy sprawdzisz i zarezerwujesz w minutę.</p>
+    <a href="${link}" style="display:inline-block;background:${kolor};color:#fff;text-decoration:none;font-weight:bold;font-size:16px;padding:13px 24px;border-radius:999px">Wybierz termin</a>
+  </div>
+  <p style="max-width:480px;margin:14px auto 0;font-size:12px;line-height:1.5;color:#8a8796;text-align:center">Dostajesz tę wiadomość, bo zgodziłaś się na przypomnienie o kolejnej wizycie w ${html(p.salon)}. <a href="${wypisz}" style="color:#8a8796">Nie chcę takich przypomnień</a></p>
+</div>`;
+  return { temat, tekst, body, wypisz };
+}
+
 Deno.serve(async (req) => {
   const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
     auth: { persistSession: false },
@@ -191,5 +223,33 @@ Deno.serve(async (req) => {
     await oznacz("pominiety", powod);
     wynik.pominiete++;
   }
-  return Response.json(wynik);
+  // 4) „Czas na kolejną wizytę” – mail do klientek, które się na to zgodziły
+  const powroty = { mail: 0, bledy: 0 };
+  if (resendKey) {
+    const { data: pw } = await db.rpc("powroty_do_wyslania");
+    for (const p of (pw ?? []) as Powrot[]) {
+      const m = trescPowrotu(p);
+      try {
+        const r = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            from: `${p.salon.replace(/["<>]/g, "")} (Bloomly) <${NADAWCA_MAIL}>`,
+            to: [p.email],
+            subject: m.temat,
+            html: m.body,
+            text: m.tekst,
+            headers: { "List-Unsubscribe": `<${m.wypisz}>` },
+          }),
+        });
+        if (r.ok) powroty.mail++;
+        else powroty.bledy++;
+      } catch {
+        powroty.bledy++;
+      }
+      // oznaczamy także przy błędzie, żeby nie wysyłać w kółko
+      await db.from("klientki").update({ powrot_wyslano: new Date().toISOString() }).eq("id", p.klientka_id);
+    }
+  }
+  return Response.json({ ...wynik, powroty });
 });

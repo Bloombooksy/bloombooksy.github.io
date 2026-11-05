@@ -17,7 +17,7 @@ import { dodajDni, wStrefie } from "./czas";
 
 type Tabele = Database["public"]["Tables"];
 
-export type WizytaZKlientka = WizytaRow & { klientka: Pick<KlientkaRow, "id" | "imie" | "telefon" | "email" | "instagram" | "prosba_o_opinie" | "zablokowana"> | null };
+export type WizytaZKlientka = WizytaRow & { klientka: Pick<KlientkaRow, "id" | "imie" | "telefon" | "email" | "instagram" | "prosba_o_opinie" | "zablokowana" | "alergie"> | null };
 
 function ok<T>(r: { data: T | null; error: unknown }): T {
   if (r.error) throw r.error;
@@ -116,6 +116,25 @@ export function useUslugi() {
   });
 }
 
+export type Powrot = {
+  klientka_id: string;
+  imie: string;
+  telefon: string;
+  email: boolean;
+  zgoda: boolean;
+  usluga: string;
+  ostatnia: string;
+  termin: string;
+};
+
+/** Klientki, którym minął czas na kolejną wizytę i nie mają nic zaplanowanego. */
+export function usePowroty() {
+  return useQuery({
+    queryKey: ["powroty"],
+    queryFn: async () => ok<Powrot[]>((await supabase.rpc("moje_powroty")) as { data: Powrot[] | null; error: unknown }),
+  });
+}
+
 export function useKlientki() {
   return useQuery({
     queryKey: ["klientki"],
@@ -145,7 +164,7 @@ export function usePrzerwy(od: string, doDnia: string) {
   });
 }
 
-const WIZYTA_SELECT = "*, klientka:klientki(id, imie, telefon, email, instagram, prosba_o_opinie, zablokowana)";
+const WIZYTA_SELECT = "*, klientka:klientki(id, imie, telefon, email, instagram, prosba_o_opinie, zablokowana, alergie)";
 
 /** Wizyty z zakresu dni (włącznie). */
 export function useWizyty(od: string, doDnia: string) {
