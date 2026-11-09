@@ -11,6 +11,7 @@ import { WizytaForm } from "../components/WizytaForm";
 import { ZakonczForm } from "../components/ZakonczForm";
 import { Oczekujace } from "../components/Oczekujace";
 import { WyborOsoby, useWybranaOsoba } from "../components/WyborOsoby";
+import { PierwszeKroki } from "../components/PierwszeKroki";
 
 /** Ekran „Dziś”: lista klientek, odhaczanie z kwotą, licznik i utarg dnia. */
 export function Dzis() {
@@ -53,6 +54,8 @@ export function Dzis() {
         onNast={() => ustaw(dodajDni(dzien, 1))}
         onDzis={() => ustaw(dzis)}
       />
+
+      {dzien === dzis && <PierwszeKroki />}
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         <Kafelek etykieta="Klientki" wartosc={`${p.zrobione} / ${wszystkie}`} podpis={p.zaplanowane ? `zostało ${p.zaplanowane}` : wszystkie ? "wszystkie zrobione" : "brak wizyt"} />

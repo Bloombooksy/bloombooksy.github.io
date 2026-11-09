@@ -266,7 +266,23 @@ export function WizytaForm({
           <label className="etykieta" htmlFor="us">
             Usługa
           </label>
-          <select id="us" className="pole" value={uslugaId} onChange={(e) => wybierzUsluge(e.target.value)}>
+          {aktywne.length > 0 && aktywne.length <= 8 && (
+            <div className="mb-2 flex flex-wrap gap-1.5" role="radiogroup" aria-label="Usługa">
+              {aktywne.map((u) => (
+                <button
+                  key={u.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={uslugaId === u.id}
+                  onClick={() => wybierzUsluge(uslugaId === u.id ? "" : u.id)}
+                  className={`rounded-full border px-3 py-1.5 text-[14px] font-semibold transition ${uslugaId === u.id ? "border-atrament bg-atrament text-krem" : "border-linia bg-papier"}`}
+                >
+                  {u.nazwa}
+                </button>
+              ))}
+            </div>
+          )}
+          <select id="us" className={`pole ${aktywne.length > 0 && aktywne.length <= 8 ? "sr-only" : ""}`} value={uslugaId} onChange={(e) => wybierzUsluge(e.target.value)}>
             <option value="">{wizyta?.usluga_nazwa && !wizyta.usluga_id ? wizyta.usluga_nazwa : "— wybierz —"}</option>
             {aktywne.map((u) => (
               <option key={u.id} value={u.id}>
