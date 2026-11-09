@@ -4,15 +4,15 @@ import "@fontsource-variable/bricolage-grotesque";
 import "@fontsource/caveat/500.css";
 import { komunikat, supabase } from "../lib/supabase";
 import { DEMO, OFERTA } from "../lib/oferta";
-import { ZnakBloomly } from "./ZnakBloomly";
+import { NapisBloomly, ZnakBloomly } from "./ZnakBloomly";
 
 /** Wspólne elementy stron sprzedażowych Bloomly (strona główna, „Jak to działa”). */
 export function NaglowekMarketing() {
   return (
     <header className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-5 sm:px-5">
       <Link to="/" className="ld-logo inline-flex items-center gap-2" aria-label="Bloomly – strona główna">
-        <ZnakBloomly size={30} />
-        Bloomly
+        <ZnakBloomly size={32} />
+        <NapisBloomly height={25} />
       </Link>
       <nav className="flex items-center gap-1 sm:gap-2">
         <NavLink to="/jak-to-dziala" className={({ isActive }) => `ld-btn ld-btn-cichy px-3 sm:px-[22px] ${isActive ? "ld-aktywny" : ""}`}>
@@ -36,8 +36,8 @@ export function StopkaMarketing() {
     <footer className="ld-stopka">
       <div className="mx-auto flex max-w-6xl flex-wrap items-baseline justify-between gap-4 px-5 py-10">
         <span className="ld-logo inline-flex items-center gap-2 text-[22px]">
-          <ZnakBloomly size={26} srodek="#ffffff" check="#c2185b" />
-          Bloomly
+          <ZnakBloomly size={28} kartka="#ffffff" okno="#c2185b" kwiat="#ffffff" srodek="#c2185b" />
+          <NapisBloomly height={22} />
         </span>
         <p className="text-[14px]">Kalendarz i zapisy online dla salonów beauty. Dane przechowywane w UE.</p>
         {OFERTA.kontaktEmail && (
