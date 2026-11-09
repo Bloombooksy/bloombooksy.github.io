@@ -4,20 +4,7 @@ import { Camera, Trash2, X } from "lucide-react";
 import { supabase, komunikat } from "../lib/supabase";
 import type { ZdjecieRow } from "../lib/database.types";
 import { Blad } from "./ui";
-
-const MAKS = 1600;
-
-/** Zmniejsza zdjęcie z telefonu do max 1600 px i zapisuje jako JPEG (ok. 200–400 kB zamiast kilku MB). */
-async function zmniejsz(plik: File): Promise<Blob> {
-  const bitmap = await createImageBitmap(plik);
-  const skala = Math.min(1, MAKS / Math.max(bitmap.width, bitmap.height));
-  const c = document.createElement("canvas");
-  c.width = Math.round(bitmap.width * skala);
-  c.height = Math.round(bitmap.height * skala);
-  c.getContext("2d")!.drawImage(bitmap, 0, 0, c.width, c.height);
-  bitmap.close();
-  return new Promise((ok, zle) => c.toBlob((b) => (b ? ok(b) : zle(new Error("Nie udało się przygotować zdjęcia"))), "image/jpeg", 0.82));
-}
+import { zmniejszZdjecie as zmniejsz } from "../lib/obraz";
 
 type ZAdresem = ZdjecieRow & { url: string };
 

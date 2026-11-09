@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { AlertTriangle, AtSign, Check, FileUp, Phone, Plus, Repeat, Search, Users } from "lucide-react";
+import { AlertTriangle, AtSign, Camera, Check, ChevronRight, FileUp, Phone, Plus, Repeat, Search, Users } from "lucide-react";
 import { ImportKlientek } from "../components/ImportKlientek";
+import { ImportZdjecia } from "../components/ImportZdjecia";
 import { usePowroty, useHistoriaKlientki, useKlientki, useSalon, useSalonId, useZapis } from "../lib/dane";
 import { ZdjeciaKlientki } from "../components/ZdjeciaKlientki";
 import { ListaOczekujacych } from "../components/ListaOczekujacych";
@@ -21,6 +22,7 @@ export default function Klientki() {
   const [q, setQ] = useState("");
   const [otwarta, setOtwarta] = useState<KlientkaRow | "nowa" | null>(null);
   const [importOtwarty, setImportOtwarty] = useState(false);
+  const [zdjecieOtwarte, setZdjecieOtwarte] = useState(false);
   const lista = useMemo(() => {
     const t = q.trim().toLowerCase();
     const c = t.replace(/\D/g, "");
@@ -40,6 +42,16 @@ export default function Klientki() {
           </button>
         </div>
       </div>
+      <button onClick={() => setZdjecieOtwarte(true)} className="karta flex w-full items-center gap-3 p-4 text-left hover:bg-piasek/30">
+        <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-roz-jasny text-roz">
+          <Camera className="size-5" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-bold">Przenieś kalendarz ze zdjęcia</span>
+          <span className="block text-[13px] text-szary">Zrób zdjęcie zeszytu albo screen z Booksy – wizyty i klientki dodadzą się same.</span>
+        </span>
+        <ChevronRight className="size-5 shrink-0 text-szary" />
+      </button>
       <ListaOczekujacych />
       <Powroty />
       <label className="relative block">
@@ -71,6 +83,7 @@ export default function Klientki() {
         </ul>
       )}
       {importOtwarty && <ImportKlientek onClose={() => setImportOtwarty(false)} />}
+      {zdjecieOtwarte && <ImportZdjecia onClose={() => setZdjecieOtwarte(false)} />}
       {otwarta && <KlientkaModal k={otwarta === "nowa" ? null : otwarta} onClose={() => setOtwarta(null)} />}
     </div>
   );

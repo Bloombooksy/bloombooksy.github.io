@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Ban, CalendarPlus, Plus, X } from "lucide-react";
+import { Ban, CalendarPlus, Camera, Plus, X } from "lucide-react";
 import { useGodziny, usePrzerwy, useUslugi, useWizyty, useZapis, useZespol, type WizytaZKlientka } from "../lib/dane";
 import { WyborOsoby, useWybranaOsoba } from "../components/WyborOsoby";
 import {
@@ -25,6 +25,7 @@ import {
 import { PasekDnia } from "../components/PasekDnia";
 import { WizytaForm } from "../components/WizytaForm";
 import { BlokadaForm } from "../components/BlokadaForm";
+import { ImportZdjecia } from "../components/ImportZdjecia";
 import { Oczekujace } from "../components/Oczekujace";
 import { podsumuj, zl } from "../lib/pieniadze";
 import { komunikat } from "../lib/supabase";
@@ -125,6 +126,7 @@ function Siatka({ widok, baza, ustaw }: { widok: Exclude<Widok, "miesiac">; baza
   const [edycja, setEdycja] = useState<Edycja | null>(null);
   const [blokada, setBlokada] = useState<{ p?: PrzerwaRow; dzien?: string; start?: string; pracownik?: string } | null>(null);
   const [menu, setMenu] = useState(false);
+  const [importZdj, setImportZdj] = useState(false);
   const [przesun, setPrzesun] = useState<Przeciaganie | null>(null);
   const [cofnij, setCofnij] = useState<{ txt: string; w: WizytaZKlientka } | null>(null);
   const [blad, setBlad] = useState("");
@@ -447,6 +449,9 @@ function Siatka({ widok, baza, ustaw }: { widok: Exclude<Widok, "miesiac">; baza
           >
             <Ban className="size-5" /> Zablokuj czas
           </button>
+          <button className="flex w-full items-center gap-3 border-t border-linia px-4 py-3.5 text-left font-semibold hover:bg-piasek/50" onClick={() => (setMenu(false), setImportZdj(true))}>
+            <Camera className="size-5" /> Import ze zdjęcia
+          </button>
         </div>
       )}
       <button
@@ -458,6 +463,7 @@ function Siatka({ widok, baza, ustaw }: { widok: Exclude<Widok, "miesiac">; baza
         {menu ? <X className="size-7" /> : <Plus className="size-7" />}
       </button>
       {edycja && <WizytaForm wizyta={edycja.w} dzien={edycja.dzien} start={edycja.start} pracownik={edycja.pracownik} onClose={() => setEdycja(null)} />}
+      {importZdj && <ImportZdjecia onClose={() => setImportZdj(false)} />}
       {blokada && <BlokadaForm przerwa={blokada.p} dzien={blokada.dzien} start={blokada.start} pracownik={blokada.pracownik} onClose={() => setBlokada(null)} />}
     </>
   );
