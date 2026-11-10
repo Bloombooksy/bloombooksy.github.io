@@ -8,6 +8,7 @@ import { doBase64, zmniejszZdjecie } from "../lib/obraz";
 import { wierszeZOdczytu, type Odczyt, type WierszImportu } from "../lib/importZdjecia";
 import { komunikat, supabase } from "../lib/supabase";
 import { normalizujTelefon } from "../lib/sms";
+import { odmiana } from "../lib/czas";
 
 const MAKS_ZDJEC = 6;
 
@@ -141,7 +142,7 @@ export function ImportZdjecia({ onClose }: { onClose: () => void }) {
           </button>
         ) : etap === "podglad" || etap === "zapisuje" ? (
           <button className="btn-glowny w-full" disabled={etap === "zapisuje" || (!ileWizyt && !ileKlientek)} onClick={zapisz}>
-            {etap === "zapisuje" ? "Zapisuję…" : `Dodaj ${ileWizyt} wizyt${ileKlientek ? ` i ${ileKlientek} klientek` : ""}`}
+            {etap === "zapisuje" ? "Zapisuję…" : `Dodaj ${odmiana(ileWizyt, "wizytę", "wizyty", "wizyt")}${ileKlientek ? ` i ${odmiana(ileKlientek, "klientkę", "klientki", "klientek")}` : ""}`}
           </button>
         ) : (
           <button className="btn-glowny w-full" disabled={!zdjecia.length || etap === "czytam"} onClick={czytaj}>
@@ -257,7 +258,7 @@ export function ImportZdjecia({ onClose }: { onClose: () => void }) {
       {etap === "gotowe" && (
         <div className="space-y-3">
           <p className="flex items-center gap-2 text-[17px] font-bold text-ziel">
-            <Check className="size-6" /> Dodano {wynik.wizyty} wizyt i {wynik.klientki} nowych klientek.
+            <Check className="size-6" /> Dodano {odmiana(wynik.wizyty, "wizytę", "wizyty", "wizyt")}{wynik.klientki ? ` i ${odmiana(wynik.klientki, "nową klientkę", "nowe klientki", "nowych klientek")}` : ""}.
           </p>
           {wynik.bledy.length > 0 && (
             <div className="rounded-xl bg-bursztyn-jasny p-3 text-[14px] text-bursztyn">

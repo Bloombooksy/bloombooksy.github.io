@@ -132,3 +132,11 @@ export function opisCzasu(min: number): string {
   const r = min % 60;
   return r ? `${h} h ${r} min` : `${h} h`;
 }
+
+/** Polska odmiana po liczebniku: odmiana(4, "wizyta", "wizyty", "wizyt") → "4 wizyty". */
+export function odmiana(n: number, jedna: string, kilka: string, wiele: string): string {
+  const d = n % 10;
+  const s = n % 100;
+  const slowo = n === 1 ? jedna : d >= 2 && d <= 4 && !(s >= 12 && s <= 14) ? kilka : wiele;
+  return `${n} ${slowo}`;
+}

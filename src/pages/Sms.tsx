@@ -21,6 +21,7 @@ import {
 import { komunikat } from "../lib/supabase";
 import { Blad, Przelacznik } from "../components/ui";
 import { Wstecz } from "../components/Wstecz";
+import { odmiana } from "../lib/czas";
 
 const ZMIENNE = ["{imie}", "{data}", "{godzina}", "{usluga}", "{salon}"];
 const OPIS_STATUSU: Record<string, string> = {
@@ -252,7 +253,7 @@ export default function Sms() {
         <h2 className="font-bold">
           Jutro ({krotkaData(jutro)}) –{" "}
           {doWyslania.length
-            ? `${doWyslania.length} ${doWyslania.length === 1 ? "wizyta" : doWyslania.length < 5 ? "wizyty" : "wizyt"}`
+            ? odmiana(doWyslania.length, "wizyta", "wizyty", "wizyt")
             : "brak wizyt"}
         </h2>
         {doWyslania.length === 0 && (

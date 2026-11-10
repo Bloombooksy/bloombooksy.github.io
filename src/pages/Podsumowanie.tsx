@@ -6,6 +6,7 @@ import type { Platnosc } from "../lib/database.types";
 import { Kafelek } from "../components/ui";
 import { PasekDnia } from "../components/PasekDnia";
 import { Wstecz } from "../components/Wstecz";
+import { odmiana } from "../lib/czas";
 
 export default function Podsumowanie() {
   const dzis = dzienKey();
@@ -69,7 +70,7 @@ export default function Podsumowanie() {
         <h2 className="mb-3 font-bold">Utarg dzień po dniu</h2>
         <div className="flex h-48 items-end gap-[3px] pt-6">
           {naDzien.map((x) => (
-            <div key={x.d} className="group relative flex h-full flex-1 flex-col justify-end" title={`${krotkaData(x.d)}: ${zl(x.razem)}, ${x.zrobione} klientek`}>
+            <div key={x.d} className="group relative flex h-full flex-1 flex-col justify-end" title={`${krotkaData(x.d)}: ${zl(x.razem)}, ${odmiana(x.zrobione, "klientka", "klientki", "klientek")}`}>
               <div className={`rounded-t-md ${x.d === dzis ? "bg-roz" : "bg-mokka/80"}`} style={{ height: `${(x.razem / max) * 100}%`, minHeight: x.razem ? 3 : 0 }} />
               {tryb === "tydzien" && (
                 <span className="absolute -top-5 inset-x-0 text-center text-[11px] font-bold text-szary">{x.razem ? Math.round(x.razem) : ""}</span>

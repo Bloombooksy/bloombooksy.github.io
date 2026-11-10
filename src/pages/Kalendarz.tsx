@@ -21,6 +21,7 @@ import {
   tydzien,
   wStrefie,
   wzglednie,
+  odmiana,
 } from "../lib/czas";
 import { PasekDnia } from "../components/PasekDnia";
 import { WizytaForm } from "../components/WizytaForm";
@@ -170,7 +171,7 @@ function Siatka({ widok, baza, ustaw }: { widok: Exclude<Widok, "miesiac">; baza
   }
 
   // ——— przesuwanie wizyty: przytrzymaj (telefon) albo przeciągnij (myszką) ———
-  const gest = useRef<{ id: number; x: number; y: number; w: WizytaZKlientka; aktywny: boolean; timer?: number; ruszyl: boolean } | null>(null);
+  const gest = useRef<{ id: number; x: number; y: number; w: WizytaZKlientka; aktywny: boolean; timer?: number; ruszyl: boolean; staly?: boolean } | null>(null);
 
   // po przytrzymaniu palcem strona nie może się przewijać, dopóki przesuwamy wizytę
   useEffect(() => {
@@ -191,9 +192,10 @@ function Siatka({ widok, baza, ustaw }: { widok: Exclude<Widok, "miesiac">; baza
   }
 
   function wizytaDown(w: WizytaZKlientka, e: React.PointerEvent<HTMLButtonElement>) {
-    if (w.status === "zrealizowana" || w.status === "odwolana" || w.status === "nieobecnosc") return;
-    const g = { id: e.pointerId, x: e.clientX, y: e.clientY, w, aktywny: false, ruszyl: false } as NonNullable<typeof gest.current>;
-    if (e.pointerType !== "mouse")
+    // zakończonych wizyt nie przesuwamy, ale klik nadal je otwiera
+    const staly = w.status === "zrealizowana" || w.status === "odwolana" || w.status === "nieobecnosc";
+    const g = { id: e.pointerId, x: e.clientX, y: e.clientY, w, aktywny: false, ruszyl: false, staly } as NonNullable<typeof gest.current>;
+    if (e.pointerType !== "mouse" && !staly)
       g.timer = window.setTimeout(() => {
         g.aktywny = true;
         navigator.vibrate?.(15);
@@ -209,6 +211,10 @@ function Siatka({ widok, baza, ustaw }: { widok: Exclude<Widok, "miesiac">; baza
     const dy = e.clientY - g.y;
     if (!g.aktywny) {
       if (Math.hypot(dx, dy) > 6) {
+        if (g.staly) {
+          gest.current = null; // ruch po zakończonej wizycie = przewijanie, bez otwierania
+          return;
+        }
         if (e.pointerType === "mouse") {
           g.aktywny = true;
           e.currentTarget.setPointerCapture(e.pointerId);
@@ -267,7 +273,7 @@ function Siatka({ widok, baza, ustaw }: { widok: Exclude<Widok, "miesiac">; baza
     <>
       <PasekDnia
         tytul={tytul}
-        podtytul={`${suma.zrobione + suma.zaplanowane} wizyt · ${zl(suma.razem)} utargu`}
+        podtytul={`${odmiana(suma.zrobione + suma.zaplanowane, "wizyta", "wizyty", "wizyt")} · ${zl(suma.razem)} utargu`}
         czyDzis={dni.includes(dzis)}
         onPoprz={() => ustaw(dodajDni(widok === "tydzien" ? poczatekTygodnia(baza) : baza, -krok))}
         onNast={() => ustaw(dodajDni(widok === "tydzien" ? poczatekTygodnia(baza) : baza, krok))}
@@ -487,7 +493,7 @@ function Miesiac({ baza, ustaw, onDzien }: { baza: string; ustaw: (k: string) =>
     <>
       <PasekDnia
         tytul={nazwaMiesiaca(od)}
-        podtytul={`${suma.zrobione + suma.zaplanowane} wizyt · ${zl(suma.razem)} utargu`}
+        podtytul={`${odmiana(suma.zrobione + suma.zaplanowane, "wizyta", "wizyty", "wizyt")} · ${zl(suma.razem)} utargu`}
         czyDzis={od === poczatekMiesiaca(dzis)}
         onPoprz={() => ustaw(poczatekMiesiaca(dodajDni(od, -1)))}
         onNast={() => ustaw(dodajDni(doDnia, 1))}

@@ -72,7 +72,7 @@ export default function MojaWizyta() {
       </Ekran>
     );
 
-  const stan = STAN[w.status];
+  const stan = STAN[w.status] ?? STAN.potwierdzona;
   const I = stan.ikona;
   const aktualna = w.status === "oczekuje" || w.status === "potwierdzona";
   const wydarzenie: Wydarzenie = {
@@ -91,7 +91,8 @@ export default function MojaWizyta() {
     const { data, error } = await supabase.rpc("wizyta_odwolaj", { p_kod: kod });
     setOdwoluje(false);
     if (error) return setBlad(error.message);
-    qc.setQueryData(["wizyta", kod], data);
+    if (data && typeof data === "object" && "status" in data) qc.setQueryData(["wizyta", kod], data);
+    else await qc.invalidateQueries({ queryKey: ["wizyta", kod] });
   }
 
   return (

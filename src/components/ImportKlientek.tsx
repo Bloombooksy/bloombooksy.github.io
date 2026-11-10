@@ -5,6 +5,7 @@ import { useKlientki, useSalonId } from "../lib/dane";
 import { klientkiZCsv, parsujCsv, type NowaKlientka } from "../lib/importCsv";
 import { komunikat, supabase } from "../lib/supabase";
 import { Blad, Modal } from "./ui";
+import { odmiana } from "../lib/czas";
 
 /** Przenosiny z Booksy / telefonu / Excela: wybierz plik CSV, sprawdź podgląd, zaimportuj. */
 export function ImportKlientek({ onClose }: { onClose: () => void }) {
@@ -56,14 +57,14 @@ export function ImportKlientek({ onClose }: { onClose: () => void }) {
         ) : (
           wynik && (
             <button className="btn-glowny w-full" disabled={zapisuje || !wynik.nowe.length} onClick={importuj}>
-              {zapisuje ? "Importuję…" : `Dodaj ${wynik.nowe.length} klientek`}
+              {zapisuje ? "Importuję…" : `Dodaj ${odmiana(wynik.nowe.length, "klientkę", "klientki", "klientek")}`}
             </button>
           )
         )
       }
     >
       {gotowe ? (
-        <p className="rounded-2xl bg-ziel-jasny p-4 text-[15px] font-semibold text-ziel">Dodano {gotowe} klientek ✓</p>
+        <p className="rounded-2xl bg-ziel-jasny p-4 text-[15px] font-semibold text-ziel">Dodano {odmiana(gotowe, "klientkę", "klientki", "klientek")} ✓</p>
       ) : (
         <div className="space-y-4">
           <p className="text-[15px] text-szary">

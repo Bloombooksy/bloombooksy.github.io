@@ -37,3 +37,11 @@ describe("czas w strefie salonu", () => {
     expect(wzglednie("2026-11-09", "2026-11-04")).toBeNull();
   });
 });
+
+import { odmiana } from "./czas";
+describe("odmiana", () => {
+  it("odmienia po polsku", () => {
+    const w = (n: number) => odmiana(n, "wizyta", "wizyty", "wizyt");
+    expect([1, 2, 4, 5, 12, 14, 22, 25, 0].map(w)).toEqual(["1 wizyta", "2 wizyty", "4 wizyty", "5 wizyt", "12 wizyt", "14 wizyt", "22 wizyty", "25 wizyt", "0 wizyt"]);
+  });
+});
