@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { ChevronLeft } from "lucide-react";
 import { supabase, komunikat } from "../lib/supabase";
 import { Blad } from "../components/ui";
 import { Logo } from "../components/Layout";
@@ -44,6 +45,9 @@ export function Logowanie() {
   return (
     <div className="grid min-h-dvh place-items-center px-5 py-10">
       <div className="w-full max-w-sm">
+        <a href="https://bloomly.com.pl" className="-ml-1 mb-4 flex min-h-11 w-fit items-center gap-1 pr-3 text-[14px] font-semibold text-szary hover:text-atrament">
+          <ChevronLeft className="size-4" /> Strona Bloomly
+        </a>
         <div className="mb-8 text-center">
           <Link to="/" aria-label="Strona główna Bloomly">
             <Logo />

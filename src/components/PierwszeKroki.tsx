@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Check, ChevronRight, X } from "lucide-react";
 import { useCzyWlascicielka, useGodziny, useKlientki, useSalon, useUslugi } from "../lib/dane";
+import { DEMO } from "../lib/oferta";
 
 const KLUCZ = "bloomly-pierwsze-kroki-ukryte";
 
@@ -19,7 +20,7 @@ export function PierwszeKroki() {
       return false;
     }
   });
-  if (!wlascicielka || !s || !uslugi || !godziny || !klientki || ukryte) return null;
+  if (!wlascicielka || !s || !uslugi || !godziny || !klientki || ukryte || s.slug === DEMO.slug) return null;
 
   const kroki = [
     { ok: uslugi.some((u) => u.aktywna), txt: "Dodaj usługi i ceny", to: "/uslugi" },

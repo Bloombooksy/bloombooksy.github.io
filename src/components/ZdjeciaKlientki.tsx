@@ -5,6 +5,7 @@ import { supabase, komunikat } from "../lib/supabase";
 import type { ZdjecieRow } from "../lib/database.types";
 import { Blad } from "./ui";
 import { zmniejszZdjecie as zmniejsz } from "../lib/obraz";
+import { useWsteczZamyka } from "../lib/wstecz";
 
 type ZAdresem = ZdjecieRow & { url: string };
 
@@ -90,6 +91,7 @@ export function ZdjeciaKlientki({ salonId, klientkaId }: { salonId: string; klie
       )}
       <Blad>{blad}</Blad>
       {podglad && (
+        <Podglad onClose={() => setPodglad(null)}>
         <div className="fixed inset-0 z-[70] flex flex-col bg-black/90 p-4" role="dialog" aria-label="Zdjęcie">
           <div className="flex items-center justify-between text-white">
             <span className="text-[14px]">{new Date(podglad.created_at).toLocaleDateString("pl-PL", { day: "numeric", month: "long", year: "numeric" })}</span>
@@ -104,7 +106,14 @@ export function ZdjeciaKlientki({ salonId, klientkaId }: { salonId: string; klie
           </div>
           <img src={podglad.url} alt="" className="mt-4 min-h-0 flex-1 object-contain" />
         </div>
+        </Podglad>
       )}
     </section>
   );
+}
+
+/** Pełny ekran zdjęcia – „Wstecz” w telefonie wraca do karty klientki. */
+function Podglad({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
+  useWsteczZamyka(onClose);
+  return <>{children}</>;
 }

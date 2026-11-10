@@ -62,7 +62,7 @@ export function PrzyciskDemo({ className = "" }: { className?: string }) {
     const { error } = await supabase.auth.signInWithPassword({ email: DEMO.email, password: DEMO.haslo });
     setCzeka(false);
     if (error) return setBlad(komunikat(error));
-    nav("/");
+    nav("/", { replace: true });
   }
   // link „…/#/?demo” ze strony bloomly.com.pl otwiera salon demo od razu
   const { search } = useLocation();

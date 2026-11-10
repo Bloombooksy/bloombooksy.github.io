@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { X } from "lucide-react";
+import { useWsteczZamyka } from "../lib/wstecz";
 
 export function Modal({
   tytul,
@@ -13,6 +14,7 @@ export function Modal({
   stopka?: ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  useWsteczZamyka(onClose);
   useEffect(() => {
     const d = ref.current;
     if (d && !d.open) d.showModal();
