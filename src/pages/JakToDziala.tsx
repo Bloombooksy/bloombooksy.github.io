@@ -7,7 +7,7 @@ import { DEMO, OFERTA, kosztBloomly, kosztBooksy } from "../lib/oferta";
 const zl = (n: number) => `${new Intl.NumberFormat("pl-PL").format(Math.round(n))} zł`;
 const SALON = "Studio Bloom";
 const KOLOR = "#c9707a";
-const LINK = "app.bloomly.com.pl/#/zapisy/studio-bloom";
+const LINK = "app.bloomly.com.pl/#/zapisy/demo";
 
 /** „Jak to działa” – droga klientki od SMS-a z linkiem do przypomnienia, krok po kroku na telefonie. */
 export default function JakToDziala() {
@@ -84,7 +84,7 @@ const KROKI: Krok[] = [
   {
     kto: "Klientka",
     tytul: "Dostaje przypomnienie dzień przed",
-    opis: "Dzień przed wizytą Bloomly wysyła jej mail z godziną i linkiem do odwołania. W pakiecie Premium – automatyczny SMS. Mniej zapomnianych wizyt, zero pisania z Twojej strony.",
+    opis: "Dzień przed wizytą Bloomly wysyła jej mail z godziną i linkiem do odwołania. Z pakietem SMS – automatyczny SMS. Mniej zapomnianych wizyt, zero pisania z Twojej strony.",
     ekran: () => (
       <EkranSms
         nadawca={SALON}
@@ -294,13 +294,13 @@ function EkranPanel() {
 
 function BazaKlientek() {
   const booksy = kosztBooksy(1).razem;
-  const bloomly = kosztBloomly(1).rocznie;
+  const bloomly = kosztBloomly().pierwszyRok;
   const wiersze = [
     ["Za co płacisz", "Abonament i portal, który ma przyprowadzać nowe klientki", "Kalendarz i Twoja własna strona zapisów"],
     ["Prowizja od nowej klientki", "45% pierwszej wizyty z Boost, maks. 250 zł netto", "0 zł"],
     ["Co klientka widzi po kliknięciu", "Aplikację Booksy z innymi salonami w okolicy", "Tylko Twój salon, w Twoich kolorach"],
     ["Czy klientka zakłada konto", "Tak, konto Booksy", "Nie, wpisuje imię i telefon"],
-    ["Koszt dla jednej osoby przez rok", `${zl(booksy)} brutto`, zl(bloomly)],
+    ["Koszt przez pierwszy rok (1 osoba)", `${zl(booksy)} brutto`, `${zl(bloomly)} (${zl(OFERTA.jednorazowo)} raz + ${zl(OFERTA.obsluga)}/mies.), potem ${zl(OFERTA.obsluga * 12)} rocznie`],
   ];
   return (
     <section className="ld-pas">
@@ -381,7 +381,7 @@ function Sms() {
     ["Zaproszenie z linkiem do zapisów", "Kiedy chcesz", "Ty, ze swojego telefonu – treść jest gotowa", "0 zł (w Twoim abonamencie)"],
     ["Potwierdzenie wizyty z linkiem do kalendarza", "Po dodaniu lub potwierdzeniu wizyty", "Ty, jednym tapnięciem", "0 zł (w Twoim abonamencie)"],
     ["Przypomnienie mailem", "Dzień wcześniej, o godzinie, którą ustawisz", "Bloomly, automatycznie, w kolorach salonu", "W cenie (pakiet Start)"],
-    ["Przypomnienie SMS", "Dzień wcześniej", "Ty jednym tapnięciem – albo Bloomly automatycznie w Premium", `0 zł z Twojego telefonu; w Premium ${OFERTA.smsWCenie} SMS miesięcznie w cenie`],
+    ["Przypomnienie SMS", "Dzień wcześniej", "Ty jednym tapnięciem – albo Bloomly automatycznie z pakietem SMS", `0 zł z Twojego telefonu; pakiety od ${OFERTA.pakietySms[0]!.cena} zł za ${OFERTA.pakietySms[0]!.sms} SMS`],
     ["„Zwolnił się termin”", "Gdy ktoś odwoła wizytę", "Bloomly mailem do osób z listy oczekujących (albo Ty SMS-em)", "W cenie"],
     ["„Czas na kolejną wizytę”", "Po zwykłym czasie od usługi, np. 3 tygodnie po hybrydzie", "Bloomly mailem – tylko klientkom, które się zgodziły", "W cenie"],
     ["Prośba o opinię Google", "Po wizycie", "Ty, jednym tapnięciem", "0 zł (w Twoim abonamencie)"],

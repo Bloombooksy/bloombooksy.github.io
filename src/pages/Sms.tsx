@@ -85,19 +85,19 @@ export default function Sms() {
       <div className="karta space-y-1.5 p-4 text-[14px]">
         {premium ? (
           <p>
-            <b>Pakiet Premium:</b> dzień przed wizytą klientka dostaje SMS (do{" "}
+            <b>Pakiet SMS:</b> dzień przed wizytą klientka dostaje SMS (do{" "}
             {pakiet?.sms_limit} w miesiącu, wykorzystane:{" "}
             {pakiet?.sms_w_miesiacu}). Klientki bez zgody na SMS i po
             wyczerpaniu limitu dostają mail, jeśli podały e-mail.
           </p>
         ) : (
           <p>
-            <b>Pakiet Start:</b> dzień przed wizytą klientka dostaje mail z
+            <b>Bez pakietu SMS:</b> dzień przed wizytą klientka dostaje mail z
             przypomnieniem, jeśli podała e-mail (przy zapisie online albo w jej
             karcie). Pozostałym wyślesz SMS ze swojego telefonu jednym
             kliknięciem – zobacz niżej, jak to działa.{" "}
             <Link to="/pakiet" className="font-semibold underline">
-              Automatyczne SMS-y są w Premium
+              Automatyczne SMS-y – pakiety od 25 zł miesięcznie
             </Link>
             .
           </p>

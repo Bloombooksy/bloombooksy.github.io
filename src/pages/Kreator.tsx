@@ -98,7 +98,7 @@ export default function Kreator() {
         </fieldset>
 
         <ZgodaRegulamin zgoda={zgoda} onZmien={setZgoda} />
-        <p className="text-[13px] text-szary">Masz 14 dni za darmo, bez podawania karty. Potem wybierasz pakiet: Start albo Premium.</p>
+        <p className="text-[13px] text-szary">Masz 14 dni za darmo, bez podawania karty. Potem Bloomly kosztuje 249 zł raz i 29 zł miesięcznie za obsługę.</p>
         <Blad>{blad}</Blad>
         <button disabled={czeka} className="btn-glowny w-full">
           {czeka ? "Zakładam…" : "Załóż salon"}

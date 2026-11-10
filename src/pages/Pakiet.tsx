@@ -20,15 +20,15 @@ export default function Pakiet() {
   return (
     <div className="mx-auto max-w-2xl space-y-4">
       <Wstecz />
-      <h1 className="naglowek">Pakiet</h1>
+      <h1 className="naglowek">Opłaty i SMS</h1>
 
       <section className={`karta space-y-1 p-5 ${p.aktywny ? "" : "border-[#8a2f3a]"}`}>
-        <p className="text-[13px] font-bold text-szary">Twój pakiet</p>
-        <p className="font-serif text-3xl font-semibold">{premium ? "Premium" : "Start"}</p>
+        <p className="text-[13px] font-bold text-szary">Twoje Bloomly</p>
+        <p className="font-serif text-3xl font-semibold">{premium ? `Obsługa + pakiet ${p.sms_limit} SMS` : oplacone ? "Obsługa" : "Okres próbny"}</p>
         {!p.aktywny ? (
           <p className="text-[15px] font-semibold text-[#8a2f3a]">
             {oplacone ? "Opłacony okres" : "Okres próbny"} skończył się {data(koniec)}. Wizyty i klientki są bezpieczne, ale nowych wizyt nie dodasz,
-            dopóki nie opłacisz pakietu.
+            dopóki nie opłacisz obsługi.
           </p>
         ) : oplacone ? (
           <p className="text-[15px] text-szary">Opłacony do {data(koniec)}.</p>
@@ -38,7 +38,7 @@ export default function Pakiet() {
           </p>
         )}
         <p className="pt-2 text-[14px] text-szary">
-          Żeby opłacić lub zmienić pakiet, napisz do nas – na start rozliczamy się fakturą i przelewem. Przed końcem okresu próbnego odezwiemy się sami.
+          Żeby wykupić Bloomly, opłacić obsługę albo dobrać pakiet SMS, napisz do nas – na start rozliczamy się fakturą i przelewem. Przed końcem okresu próbnego odezwiemy się sami.
         </p>
       </section>
 
@@ -55,58 +55,48 @@ export default function Pakiet() {
         </section>
       )}
 
-      <section className="grid gap-3 sm:grid-cols-2">
-        {[
-          {
-            nazwa: "Start",
-            cena: OFERTA.miesiecznie,
-            moj: !premium,
-            punkty: [
-              [Check, "Kalendarz, klientki, zespół, zapisy online, zadatki"],
-              [Mail, "Przypomnienie mailem dzień przed wizytą"],
-              [Smartphone, "SMS z Twojego telefonu jednym kliknięciem, bez limitu"],
-            ],
-          },
-          {
-            nazwa: "Premium",
-            cena: OFERTA.premium,
-            moj: premium,
-            wkrotce: OFERTA.premiumWkrotce,
-            punkty: [
-              [Check, "Wszystko z pakietu Start"],
-              [MessageSquareText, `${OFERTA.smsWCenie} automatycznych SMS-ów miesięcznie`],
-              [Mail, "Po limicie przypomnienia idą mailem"],
-            ],
-          },
-        ].map((k) => (
-          <div key={k.nazwa} className={`karta p-5 ${k.moj ? "ring-2 ring-atrament" : ""}`}>
-            <div className="flex items-baseline justify-between gap-2">
-              <p className="font-bold">{k.nazwa}</p>
-              {k.moj ? (
-                <span className="rounded-full bg-atrament px-2.5 py-0.5 text-[12px] font-bold text-krem">Twój</span>
-              ) : (
-                k.wkrotce && <span className="rounded-full bg-piasek px-2.5 py-0.5 text-[12px] font-bold text-mokka">wkrótce</span>
-              )}
-            </div>
-            <p className="mt-1 font-serif text-2xl font-semibold">
-              {k.cena} zł <span className="font-sans text-[14px] font-normal text-szary">/ mies.</span>
-            </p>
-            <ul className="mt-3 space-y-2 text-[14px]">
-              {k.punkty.map(([I, t]) => {
-                const Ikona = I as typeof Check;
-                return (
-                  <li key={t as string} className="flex gap-2">
-                    <Ikona className="mt-0.5 size-4 shrink-0 text-mokka" /> {t as string}
-                  </li>
-                );
-              })}
-            </ul>
+      <section className="karta divide-y divide-linia p-0">
+        <div className="flex items-baseline justify-between gap-3 p-4">
+          <div>
+            <p className="font-bold">Aplikacja Bloomly</p>
+            <p className="text-[14px] text-szary">Płacisz raz – z pomocą w przeniesieniu kalendarza</p>
           </div>
-        ))}
+          <p className="shrink-0 font-serif text-xl font-semibold">{OFERTA.jednorazowo} zł</p>
+        </div>
+        <div className="flex items-baseline justify-between gap-3 p-4">
+          <div>
+            <p className="font-bold">Obsługa</p>
+            <p className="text-[14px] text-szary">Serwer, przypomnienia mailem, kopie danych, aktualizacje, pomoc. Cały zespół w cenie.</p>
+          </div>
+          <p className="shrink-0 font-serif text-xl font-semibold">
+            {OFERTA.obsluga} zł <span className="font-sans text-[13px] font-normal text-szary">/ mies.</span>
+          </p>
+        </div>
       </section>
-      <p className="text-[13px] text-szary">
-        +{OFERTA.zaOsobe} zł miesięcznie za każdą kolejną osobę w zespole. Płacąc za rok, płacisz za {OFERTA.rokZaMiesiecy} miesięcy.
-      </p>
+
+      <section className="karta p-4">
+        <div className="flex items-center justify-between gap-2">
+          <p className="flex items-center gap-2 font-bold">
+            <MessageSquareText className="size-5" /> Pakiety SMS – jeśli chcesz
+          </p>
+          {OFERTA.smsWkrotce && <span className="rounded-full bg-piasek px-2.5 py-0.5 text-[12px] font-bold text-mokka">wkrótce</span>}
+        </div>
+        <ul className="mt-3 divide-y divide-linia">
+          {OFERTA.pakietySms.map((k) => (
+            <li key={k.sms} className="flex items-baseline justify-between gap-3 py-2.5">
+              <span>
+                {k.sms} SMS {premium && p.sms_limit === k.sms && <b className="ml-1 rounded-full bg-atrament px-2 py-0.5 text-[12px] text-krem">Twój</b>}
+              </span>
+              <span className="whitespace-nowrap font-semibold">{k.cena} zł / mies.</span>
+            </li>
+          ))}
+        </ul>
+        <ul className="mt-2 space-y-1.5 text-[14px] text-szary">
+          <li className="flex gap-2"><Smartphone className="mt-0.5 size-4 shrink-0" /> Bez pakietu: SMS ze swojego telefonu jednym kliknięciem, bez limitu i za darmo.</li>
+          <li className="flex gap-2"><Mail className="mt-0.5 size-4 shrink-0" /> Po wykorzystaniu pakietu przypomnienia idą mailem.</li>
+          <li className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0" /> SMS-y podpisane nazwą Twojego salonu.</li>
+        </ul>
+      </section>
 
       <p className="text-[13px] text-szary">
         Dokumenty:{" "}

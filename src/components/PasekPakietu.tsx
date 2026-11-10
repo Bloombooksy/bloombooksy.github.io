@@ -74,14 +74,14 @@ export function PasekPakietu({ demo }: { demo: boolean }) {
       ) : !p.aktywny ? (
         <Link to="/pakiet" className="block rounded-2xl bg-[#fbebeb] px-4 py-3 text-[14px] text-[#8a2f3a]">
           <b>{proba ? "Okres próbny się skończył." : "Opłacony okres się skończył."}</b> Twoje dane są bezpieczne, ale nowych wizyt nie dodasz.{" "}
-          <span className="font-bold underline">Zobacz pakiety</span>
+          <span className="font-bold underline">Zobacz opłaty</span>
         </Link>
       ) : (
         proba &&
         zostalo <= 3 && (
           <Link to="/pakiet" className="block rounded-2xl bg-bursztyn-jasny px-4 py-3 text-[14px] text-bursztyn">
             <b>Okres próbny: {zostalo <= 0 ? "ostatni dzień" : `zostało ${zostalo} ${zostalo === 1 ? "dzień" : "dni"}`}.</b>{" "}
-            <span className="font-bold underline">Zobacz pakiety</span>
+            <span className="font-bold underline">Zobacz opłaty</span>
           </Link>
         )
       )}

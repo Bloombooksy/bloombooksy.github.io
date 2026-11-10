@@ -65,8 +65,8 @@ const POZYCJE = [
   {
     grupa: "Konto",
     to: "/pakiet",
-    txt: "Pakiet i płatność",
-    opis: "Okres próbny, Start lub Premium",
+    txt: "Opłaty i SMS",
+    opis: "Okres próbny, obsługa i pakiety SMS",
     ikona: Gem,
   },
   {

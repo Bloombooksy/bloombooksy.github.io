@@ -1,13 +1,14 @@
 /** Cennik i dane sprzedażowe Bloomly – jedno miejsce do zmiany cen na stronie. */
 export const OFERTA = {
-  miesiecznie: 49, // zł za salon z jedną osobą – pakiet Start
-  premium: 69, // zł za salon z jedną osobą – pakiet Premium (automatyczne SMS)
-  premiumWkrotce: true, // SMS-y ruszą po założeniu konta SMSAPI
-  zaOsobe: 15, // zł/mies. za każdą kolejną osobę w zespole
-  rokZaMiesiecy: 10, // płatność roczna = 10 miesięcy (2 gratis)
-  wdrozenieOd: 150, // zł jednorazowo: przeniesienie kalendarza, cennik, wygląd
+  jednorazowo: 249, // zł raz – zakup aplikacji dla salonu (z pomocą w przeniesieniu kalendarza)
+  obsluga: 29, // zł/mies. za salon, bez względu na liczbę osób – serwer, maile, kopie danych, aktualizacje, pomoc
   probaDni: 14,
-  smsWCenie: 100, // automatyczne przypomnienia SMS w miesiącu (Premium)
+  smsWkrotce: true, // pakiety SMS ruszą po założeniu konta SMSAPI
+  pakietySms: [
+    { sms: 100, cena: 25 },
+    { sms: 300, cena: 59 },
+    { sms: 600, cena: 99 },
+  ], // zł/mies., dobierane do obsługi
   kontaktEmail: "", // uzupełnić, gdy będzie skrzynka w domenie (pusty = sekcja kontaktu ukryta)
 };
 
@@ -24,9 +25,10 @@ export const BOOKSY = {
   vat: 1.23,
 };
 
-export function kosztBloomly(osoby: number) {
-  const mies = OFERTA.miesiecznie + OFERTA.zaOsobe * Math.max(0, osoby - 1);
-  return { miesiecznie: mies, rocznie: mies * OFERTA.rokZaMiesiecy };
+/** Koszt Bloomly: jednorazowy zakup + obsługa co miesiąc (liczba osób nie zmienia ceny). */
+export function kosztBloomly() {
+  const rokObslugi = OFERTA.obsluga * 12;
+  return { pierwszyRok: OFERTA.jednorazowo + rokObslugi, kolejnyRok: rokObslugi };
 }
 
 /** Roczny koszt Booksy (brutto): abonament + dopłaty za osoby + prowizje Boost od nowych klientek. */

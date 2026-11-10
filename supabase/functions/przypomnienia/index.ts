@@ -1,6 +1,6 @@
 // Przypomnienia o jutrzejszych wizytach, „czas na kolejną wizytę”, lista oczekujących i trwałe usuwanie salonów.
 // Woła ją pg_cron co 5 minut (nagłówek x-cron-klucz).
-// Pakiet Premium: SMS (do miesięcznego limitu salonu), potem mail. Pakiet Start: mail.
+// Z pakietem SMS (pakiet = "premium" w bazie): SMS do miesięcznego limitu salonu, potem mail. Bez pakietu: mail.
 // Bez SMSAPI_TOKEN / RESEND_API_KEY działa w trybie testowym: nic nie wysyła, oznacza wizyty jako "test".
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
@@ -172,7 +172,7 @@ Deno.serve(async (req) => {
     let smsBlad = "";
     const smsMozna = w.pakiet === "premium" && tel && w.zgoda && juz < w.sms_limit;
 
-    // 1) Premium: SMS w ramach limitu
+    // 1) Pakiet SMS: SMS w ramach limitu
     if (smsMozna) {
       const { data: d, godzina } = czesci(w.start, w.strefa);
       const tresc = bezPl(

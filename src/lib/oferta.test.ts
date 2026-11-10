@@ -13,8 +13,7 @@ describe("kalkulator oszczędności", () => {
     expect(kosztBooksy(1, 1, 2000).boost).toBe(Math.round(250 * 1.23 * 12));
     expect(kosztBooksy(1, 2, 100).boost).toBe(Math.round(45 * 1.23 * 2 * 12));
   });
-  it("Bloomly: 49 zł + 15 zł za kolejną osobę, rok = 10 miesięcy", () => {
-    expect(kosztBloomly(1)).toEqual({ miesiecznie: 49, rocznie: 490 });
-    expect(kosztBloomly(3).rocznie).toBe(790);
+  it("Bloomly: 249 zł raz + 29 zł obsługi miesięcznie", () => {
+    expect(kosztBloomly()).toEqual({ pierwszyRok: 249 + 12 * 29, kolejnyRok: 348 });
   });
 });
