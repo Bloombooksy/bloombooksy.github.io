@@ -382,6 +382,9 @@ function Sms() {
     ["Potwierdzenie wizyty z linkiem do kalendarza", "Po dodaniu lub potwierdzeniu wizyty", "Ty, jednym tapnięciem", "0 zł (w Twoim abonamencie)"],
     ["Przypomnienie mailem", "Dzień wcześniej, o godzinie, którą ustawisz", "Bloomly, automatycznie, w kolorach salonu", "W cenie (pakiet Start)"],
     ["Przypomnienie SMS", "Dzień wcześniej", "Ty jednym tapnięciem – albo Bloomly automatycznie w Premium", `0 zł z Twojego telefonu; w Premium ${OFERTA.smsWCenie} SMS miesięcznie w cenie`],
+    ["„Zwolnił się termin”", "Gdy ktoś odwoła wizytę", "Bloomly mailem do osób z listy oczekujących (albo Ty SMS-em)", "W cenie"],
+    ["„Czas na kolejną wizytę”", "Po zwykłym czasie od usługi, np. 3 tygodnie po hybrydzie", "Bloomly mailem – tylko klientkom, które się zgodziły", "W cenie"],
+    ["Prośba o opinię Google", "Po wizycie", "Ty, jednym tapnięciem", "0 zł (w Twoim abonamencie)"],
   ];
   return (
     <section className="ld-pas">

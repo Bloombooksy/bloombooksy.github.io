@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { MessageSquareText } from "lucide-react";
+import { MessageSquareText, Smartphone } from "lucide-react";
 import { usePakiet, useSalon, useWizyty, useZmienSalon } from "../lib/dane";
 import { linkWizyty, trescPrzypomnienia } from "../lib/wiadomosci";
 import { WyslijSms } from "../components/WyslijSms";
@@ -59,6 +59,13 @@ export default function Sms() {
     salon: s.nazwa,
   });
   const czesci = liczbaCzesci(podglad);
+  const podgladRecznego = trescPrzypomnienia({
+    imie: "Ola",
+    start: `${jutro}T10:30:00`,
+    usluga: "Manicure hybrydowy",
+    salon: s.nazwa,
+    link: linkWizyty("abc123"),
+  });
   const doWyslania = wizyty.filter(
     (w) => w.status === "potwierdzona" || w.status === "oczekuje",
   );
@@ -87,8 +94,8 @@ export default function Sms() {
           <p>
             <b>Pakiet Start:</b> dzień przed wizytą klientka dostaje mail z
             przypomnieniem, jeśli podała e-mail (przy zapisie online albo w jej
-            karcie). Pozostałym wyślij SMS ze swojego telefonu – przycisk jest
-            niżej, przy jutrzejszych wizytach.{" "}
+            karcie). Pozostałym wyślesz SMS ze swojego telefonu jednym
+            kliknięciem – zobacz niżej, jak to działa.{" "}
             <Link to="/pakiet" className="font-semibold underline">
               Automatyczne SMS-y są w Premium
             </Link>
@@ -206,13 +213,54 @@ export default function Sms() {
         </div>
       )}
 
+      <section className="karta space-y-3 p-4">
+        <h2 className="flex items-center gap-2 font-bold">
+          <Smartphone className="size-5" /> SMS ze swojego telefonu
+        </h2>
+        <ol className="list-decimal space-y-1 pl-5 text-[14px]">
+          <li>Klikasz przycisk <b>SMS</b> przy wizycie.</li>
+          <li>Otwierają się Wiadomości w Twoim telefonie z numerem klientki i gotową treścią.</li>
+          <li>Możesz coś dopisać i klikasz <b>Wyślij</b>.</li>
+        </ol>
+        <p className="text-[13px] text-szary">
+          SMS idzie z Twojego numeru, więc klientka może od razu odpisać. Kosztuje
+          tyle, co zwykły SMS w Twoim abonamencie – zwykle nic. Bez limitu. Najlepiej
+          działa na telefonie; na komputerze tylko, jeśli umie wysyłać SMS-y (np. Mac
+          połączony z iPhone’em).
+        </p>
+        <div className="rounded-2xl rounded-bl-md bg-[#e9e3dc] p-3.5 text-[15px]">
+          <div className="mb-1 flex items-center gap-1.5 text-[12px] font-bold text-szary">
+            <MessageSquareText className="size-3.5" /> Przykład przypomnienia
+          </div>
+          {podgladRecznego}
+        </div>
+        <details className="text-[14px]">
+          <summary className="cursor-pointer font-semibold">Gdzie jeszcze jest przycisk SMS</summary>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-szary">
+            <li>tutaj – przy jutrzejszych wizytach (przypomnienie)</li>
+            <li>po dodaniu wizyty – potwierdzenie terminu</li>
+            <li>przy wizycie z zapisów online, która czeka na potwierdzenie</li>
+            <li>po zakończonej wizycie – prośba o opinię Google</li>
+            <li>w karcie klientki – link do zapisów online</li>
+            <li>w Klientkach, w sekcji „Czas na kolejną wizytę”</li>
+            <li>na liście oczekujących – „zwolnił się termin”</li>
+          </ul>
+        </details>
+      </section>
+
       <section className="karta p-4">
         <h2 className="font-bold">
           Jutro ({krotkaData(jutro)}) –{" "}
           {doWyslania.length
-            ? `${doWyslania.length} przypomnień`
+            ? `${doWyslania.length} ${doWyslania.length === 1 ? "wizyta" : doWyslania.length < 5 ? "wizyty" : "wizyt"}`
             : "brak wizyt"}
         </h2>
+        {doWyslania.length === 0 && (
+          <p className="mt-1 text-[14px] text-szary">
+            Gdy jutro będą wizyty, przy każdej pojawi się tu przycisk SMS z gotowym
+            przypomnieniem.
+          </p>
+        )}
         <ul className="mt-2 space-y-1.5 text-[14px]">
           {doWyslania.map((w) => (
             <li key={w.id} className="flex justify-between gap-3">

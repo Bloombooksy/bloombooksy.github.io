@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import "@fontsource-variable/bricolage-grotesque";
 import "@fontsource/caveat/500.css";
 import { komunikat, supabase } from "../lib/supabase";
@@ -11,14 +11,15 @@ export function NaglowekMarketing() {
   return (
     <header className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-5 sm:px-5">
       <Link to="/" className="ld-logo inline-flex items-center gap-2" aria-label="Bloomly – strona główna">
-        <ZnakBloomly size={32} />
-        <NapisBloomly height={25} />
+        <ZnakBloomly size={30} />
+        <span className="sm:hidden"><NapisBloomly height={20} /></span>
+        <span className="hidden sm:inline"><NapisBloomly height={25} /></span>
       </Link>
-      <nav className="flex items-center gap-1 sm:gap-2">
-        <NavLink to="/jak-to-dziala" className={({ isActive }) => `ld-btn ld-btn-cichy px-3 sm:px-[22px] ${isActive ? "ld-aktywny" : ""}`}>
+      <nav className="flex items-center gap-0.5 sm:gap-2">
+        <NavLink to="/jak-to-dziala" className={({ isActive }) => `ld-btn ld-btn-cichy px-2.5 sm:px-[22px] ${isActive ? "ld-aktywny" : ""}`}>
           Jak to działa
         </NavLink>
-        <Link to="/logowanie" className="ld-btn ld-btn-cichy px-3 sm:px-[22px]">
+        <Link to="/logowanie" className="ld-btn ld-btn-cichy px-2.5 sm:px-[22px]">
           <span>
             Zaloguj<span className="ld-szeroki-txt">&nbsp;się</span>
           </span>
@@ -50,6 +51,8 @@ export function StopkaMarketing() {
   );
 }
 
+let demoOtwarte = false; // kilka przycisków na stronie – logujemy raz
+
 export function PrzyciskDemo({ className = "" }: { className?: string }) {
   const nav = useNavigate();
   const [czeka, setCzeka] = useState(false);
@@ -61,6 +64,15 @@ export function PrzyciskDemo({ className = "" }: { className?: string }) {
     if (error) return setBlad(komunikat(error));
     nav("/");
   }
+  // link „…/#/?demo” ze strony bloomly.com.pl otwiera salon demo od razu
+  const { search } = useLocation();
+  useEffect(() => {
+    if (!demoOtwarte && new URLSearchParams(search).has("demo")) {
+      demoOtwarte = true;
+      void wejdz();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
   return (
     <span className="inline-flex flex-col">
       <button className={`ld-btn ld-btn-ink ${className}`} onClick={wejdz} disabled={czeka}>
